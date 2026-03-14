@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UK Postcode Checker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #0d1b2a;
+      color: #fff;
+      padding: 2.5rem 1rem 2rem;
+      text-align: center;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0.4rem; }
+    header .subtitle { font-size: 0.8rem; color: #8fa8c0; margin-bottom: 1.5rem; }
+    .search-row { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+    #postcodeInput {
+      padding: 0.7rem 1.2rem; font-size: 1.1rem; border: none; border-radius: 8px;
+      width: 220px; text-transform: uppercase; outline: none;
+    }
+    #searchBtn {
+      padding: 0.7rem 1.6rem; font-size: 1rem; font-weight: 600;
+      background: #e76f51; color: #fff; border: none; border-radius: 8px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    #searchBtn:hover { background: #cf5c3d; }
+    #searchBtn:disabled { background: #888; cursor: not-allowed; }
+
+    /* ── Grid ── */
+    #results {
+      display: none;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem 3rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+    #results.visible { display: grid; }
+    @media (max-width: 700px) { #results { grid-template-columns: 1fr; } }
+
+    /* ── Card ── */
+    .card {
+      background: #fff; border: 1px solid #e0e6ed; border-radius: 12px;
+      padding: 1.4rem 1.6rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .card h2 {
+      font-size: 1rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: #4a5568; margin-bottom: 1rem;
+      border-bottom: 2px solid #f0f2f5; padding-bottom: 0.5rem;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block; width: 28px; height: 28px;
+      border: 3px solid #e0e6ed; border-top-color: #e76f51;
+      border-radius: 50%; animation: spin 0.7s linear infinite; margin: 1.5rem auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-wrap { display: flex; justify-content: center; }
+
+    /* ── Location card ── */
+    .info-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1rem; margin-bottom: 1rem;
+    }
+    .info-item label { font-size: 0.7rem; text-transform: uppercase; color: #8fa8c0; display: block; }
+    .info-item span { font-size: 0.95rem; font-weight: 600; }
+    .map-frame { width: 100%; height: 220px; border: none; border-radius: 8px; margin-top: 0.5rem; }
+
+    /* ── Crime / chart summary ── */
+    .stat-summary { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.4rem; }
+    .stat-total { font-size: 2rem; font-weight: 800; }
+    .stat-label { font-size: 0.85rem; color: #666; }
+    .stat-sub { font-size: 0.78rem; color: #999; margin-bottom: 1rem; }
+    canvas { max-width: 100%; }
+
+    /* ── Schools card ── */
+    .schools-table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th {
+      text-align: left; padding: 0.4rem 0.5rem; border-bottom: 2px solid #e0e6ed;
+      font-size: 0.72rem; text-transform: uppercase; color: #8fa8c0;
+    }
+    td { padding: 0.45rem 0.5rem; border-bottom: 1px solid #f0f2f5; }
+    tr:last-child td { border-bottom: none; }
+    .schools-note { font-size: 0.75rem; color: #999; margin-top: 0.8rem; }
+    .google-key-note { font-size: 0.75rem; color: #bbb; font-style: italic; }
+
+    /* ── Error / fallback ── */
+    .error-msg { font-size: 0.85rem; color: #999; font-style: italic; }
+    .error-msg a { color: #3a7bd5; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>UK Postcode Checker</h1>
+  <p class="subtitle">Powered by ONS Census 2021 · Police API · OpenStreetMap · open data</p>
+  <div class="search-row">
+    <input id="postcodeInput" type="text" placeholder="e.g. B90 2DH" maxlength="8" />
+    <button id="searchBtn" onclick="runSearch()">Search</button>
+  </div>
+</header>
+
+<div id="results">
+  <div class="card" id="card-location"><h2>📍 Location</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
+  <div class="card" id="card-crime"><h2>🚔 Crime</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
+  <div class="card" id="card-ethnicity"><h2>👥 Ethnicity</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
+  <div class="card" id="card-tenure"><h2>🏠 Housing Tenure</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
+  <div class="card" id="card-schools"><h2>🏫 Schools Nearby (2 miles)</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
+  <div class="card" id="card-religion"><h2>✝ Religion</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
+</div>
+
+<footer id="footer" style="display:none; text-align:center; padding:1.5rem; font-size:0.78rem; color:#aaa; background:#fff; border-top:1px solid #e0e6ed; margin-top:1rem;">
+  <strong>Data sources:</strong>
+  <a href="https://postcodes.io" target="_blank">Postcodes.io</a> ·
+  <a href="https://data.police.uk" target="_blank">Police API</a> ·
+  <a href="https://www.nomisweb.co.uk" target="_blank">ONS / Nomis Census 2021</a> ·
+  <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> ·
+  <a href="https://reports.ofsted.gov.uk" target="_blank">Ofsted</a>
+</footer>
+
+<script>
+  const GOOGLE_PLACES_KEY = "";  // Get free key at console.cloud.google.com
+
+  /* ── Chart instances ── */
+  let crimeChart = null, ethnicityChart = null, tenureChart = null, religionChart = null;
+
+  /* ── Helpers ── */
+  const normalisePostcode = raw => raw.replace(/\s+/g, '').toUpperCase();
+  const spinner = () => '<div class="loading-wrap"><div class="spinner"></div></div>';
+
+  function setCardContent(id, html) {
+    const card = document.getElementById(id);
+    const h2 = card.querySelector('h2');
+    card.innerHTML = '';
+    card.appendChild(h2.cloneNode(true));
+    card.insertAdjacentHTML('beforeend', html);
+  }
+
+  function distKm(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+  const kmToMiles = km => (km * 0.621371).toFixed(2);
+
+  /* ── Horizontal bar chart with value labels ── */
+  function makeBarChart(canvasId, labels, values, color, total) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: color,
+          borderRadius: 5,
+          barThickness: 18,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const val = ctx.parsed.x;
+                const pct = total ? ` (${((val/total)*100).toFixed(1)}%)` : '';
+                return ` ${val.toLocaleString()}${pct}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { beginAtZero: true, grid: { color: '#f0f2f5' },
+               ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v } },
+          y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        },
+        layout: { padding: { right: 60 } },
+        animation: {
+          onComplete(evt) {
+            const chart = evt.chart;
+            const ctx2 = chart.ctx;
+            ctx2.font = '11px system-ui, sans-serif';
+            ctx2.fillStyle = '#555';
+            ctx2.textAlign = 'left';
+            chart.data.datasets.forEach((ds, di) => {
+              chart.getDatasetMeta(di).data.forEach((bar, i) => {
+                const val = ds.data[i];
+                const pct = total ? ` ${((val/total)*100).toFixed(1)}%` : '';
+                ctx2.fillText(val.toLocaleString() + pct, bar.x + 4, bar.y + 4);
+              });
+            });
+          }
+        }
+      }
+    });
+  }
+
+  /* ── Main search ── */
+  async function runSearch() {
+    const raw = document.getElementById('postcodeInput').value.trim();
+    if (!raw) return;
+
+    const pc = normalisePostcode(raw);
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true;
+    btn.textContent = 'Searching…';
+
+    const cards = ['card-location','card-crime','card-ethnicity','card-tenure','card-schools','card-religion'];
+    const results = document.getElementById('results');
+    results.classList.add('visible');
+    cards.forEach(id => {
+      const card = document.getElementById(id);
+      const h2 = card.querySelector('h2');
+      card.innerHTML = '';
+      card.appendChild(h2.cloneNode(true));
+      card.insertAdjacentHTML('beforeend', spinner());
+    });
+
+    [crimeChart, ethnicityChart, tenureChart, religionChart].forEach(c => { if (c) c.destroy(); });
+    crimeChart = ethnicityChart = tenureChart = religionChart = null;
+
+    try {
+      const pcRes = await fetch(`https://api.postcodes.io/postcodes/${pc}`);
+      if (!pcRes.ok) throw new Error(`Postcode not found (${pcRes.status})`);
+      const pcData = await pcRes.json();
+      if (pcData.status !== 200) throw new Error('Invalid postcode');
+
+      const r = pcData.result;
+      const lat = r.latitude;
+      const lng = r.longitude;
+      const lsoaCode = r.codes?.lsoa || r.codes?.lsoa21 || '';  // e.g. E01010220 (~1,500 people)
+      const district = r.admin_district || '—';
+
+      renderLocation(r, lat, lng);
+
+      await Promise.allSettled([
+        renderCrime(lat, lng),
+        renderEthnicity(lsoaCode),
+        renderTenure(lsoaCode),
+        renderSchools(lat, lng, district),
+        renderReligion(lsoaCode),
+      ]);
+
+    } catch (err) {
+      cards.forEach(id => setCardContent(id, `<p class="error-msg">Error: ${err.message}</p>`));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Search';
+      document.getElementById('footer').style.display = 'block';
+    }
+  }
+
+  document.getElementById('postcodeInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runSearch();
+  });
+
+  /* ── Card 1: Location ── */
+  function renderLocation(r, lat, lng) {
+    const bboxLng0 = (lng - 0.01).toFixed(6), bboxLat0 = (lat - 0.01).toFixed(6);
+    const bboxLng1 = (lng + 0.01).toFixed(6), bboxLat1 = (lat + 0.01).toFixed(6);
+    const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bboxLng0},${bboxLat0},${bboxLng1},${bboxLat1}&layer=mapnik&marker=${lat},${lng}`;
+    setCardContent('card-location', `
+      <div class="info-grid">
+        <div class="info-item"><label>District</label><span>${r.admin_district || '—'}</span></div>
+        <div class="info-item"><label>Ward</label><span>${r.admin_ward || '—'}</span></div>
+        <div class="info-item"><label>Constituency</label><span>${r.parliamentary_constituency || '—'}</span></div>
+        <div class="info-item"><label>Region</label><span>${r.region || '—'}</span></div>
+        <div class="info-item"><label>Country</label><span>${r.country || '—'}</span></div>
+        <div class="info-item"><label>LSOA</label><span>${r.lsoa || '—'}</span></div>
+      </div>
+      <iframe class="map-frame" src="${mapUrl}" loading="lazy" title="Map"></iframe>
+    `);
+  }
+
+  /* ── Card 2: Crime ── */
+  async function renderCrime(lat, lng) {
+    try {
+      // Get latest available month from Police API
+      const latestRes = await fetch('https://data.police.uk/api/crime-last-updated');
+      const latestJson = await latestRes.json();
+      // date is "YYYY-MM-DD" — take YYYY-MM, then back one month as it's the last updated month
+      const rawDate = latestJson.date || '';
+      let crimeDate = rawDate.slice(0, 7); // "YYYY-MM"
+      // The date returned is when data was last updated; subtract one month to get latest data month
+      if (crimeDate) {
+        const [y, m] = crimeDate.split('-').map(Number);
+        const prev = new Date(y, m - 2, 1); // subtract 1 month
+        crimeDate = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      const url = `https://data.police.uk/api/crimes-street/all-crime?lat=${lat}&lng=${lng}&date=${crimeDate}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Police API ${res.status}`);
+      const crimes = await res.json();
+
+      const counts = {};
+      crimes.forEach(c => { counts[c.category] = (counts[c.category] || 0) + 1; });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const top8 = sorted.slice(0, 8);
+      const total = crimes.length;
+      const prettyLabel = cat => cat.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+      // Format date for display: "2024-09" → "Sep 2024"
+      const [dy, dm] = crimeDate.split('-');
+      const displayDate = new Date(Number(dy), Number(dm) - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+
+      setCardContent('card-crime', `
+        <div class="stat-summary">
+          <span class="stat-total" style="color:#e76f51">${total.toLocaleString()}</span>
+          <span class="stat-label">crimes reported</span>
+        </div>
+        <p class="stat-sub">${displayDate} · England LSOA avg: ~80/month</p>
+        <canvas id="crimeCanvas" height="260"></canvas>
+      `);
+
+      crimeChart = makeBarChart(
+        'crimeCanvas',
+        top8.map(([k]) => prettyLabel(k)),
+        top8.map(([, v]) => v),
+        top8.map((_, i) => `hsl(${18 + i * 10}, 85%, ${52 + i * 3}%)`),
+        total
+      );
+    } catch (err) {
+      setCardContent('card-crime', `<p class="error-msg">Crime data unavailable: ${err.message}</p>`);
+    }
+  }
+
+  /* ── Card 3: Ethnicity — Nomis Census 2021 TS021 ── */
+  async function renderEthnicity(lsoaCode) {
+    try {
+      if (!lsoaCode) throw new Error('No LSOA code available');
+      const codes = Array.from({length:19}, (_,i) => i + 1).join(',');
+      const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2041_1.data.json?geography=${lsoaCode}&C2021_ETH_20=${codes}&measures=20100&select=C2021_ETH_20_name,obs_value`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+      if (!res.ok) throw new Error(`Nomis API ${res.status}`);
+      const data = await res.json();
+      const obs = data.obs || [];
+      if (!obs.length) throw new Error('No data returned');
+
+      const sorted = obs.sort((a,b) => (b.obs_value?.value||0) - (a.obs_value?.value||0)).slice(0, 10);
+      const labels = sorted.map(o => o.c2021_eth_20?.description || '?');
+      const values = sorted.map(o => o.obs_value?.value || 0);
+      const total = values.reduce((s, v) => s + v, 0);
+
+      // Shorten labels
+      const shorten = l => l.replace(/^(Asian, Asian British or Asian Welsh): /, '')
+                            .replace(/^(White): /, 'White: ')
+                            .replace(/^(Black, Black British, Black Welsh, Caribbean or African): /, 'Black: ')
+                            .replace(/^(Mixed or Multiple ethnic groups): /, 'Mixed: ');
+
+      setCardContent('card-ethnicity', `
+        <p class="stat-sub" style="margin-bottom:0.8rem">Census 2021 · ${total.toLocaleString()} residents in this LSOA area</p>
+        <canvas id="ethnicityCanvas" height="300"></canvas>
+      `);
+
+      ethnicityChart = makeBarChart(
+        'ethnicityCanvas',
+        labels.map(shorten),
+        values,
+        labels.map((_, i) => `hsl(${185 + i * 8}, ${70 - i * 3}%, ${42 + i * 4}%)`),
+        total
+      );
+    } catch (err) {
+      setCardContent('card-ethnicity', `
+        <p class="error-msg">Data unavailable — <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a><br><small>${err.message}</small></p>`);
+    }
+  }
+
+  /* ── Card 4: Housing Tenure — Nomis Census 2021 TS054 ── */
+  async function renderTenure(lsoaCode) {
+    try {
+      if (!lsoaCode) throw new Error('No LSOA code available');
+      const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2072_1.data.json?geography=${lsoaCode}&C2021_TENURE_9=1,2,3,4,5,6,7,8&measures=20100&select=C2021_TENURE_9_name,obs_value`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+      if (!res.ok) throw new Error(`Nomis API ${res.status}`);
+      const data = await res.json();
+      const obs = data.obs || [];
+      if (!obs.length) throw new Error('No data returned');
+
+      const groupMap = {
+        'Owned: Owns outright': 'Owned outright',
+        'Owned: Owns with a mortgage or loan': 'Owned (mortgage)',
+        'Shared ownership: Shared ownership': 'Shared ownership',
+        'Social rented: Rents from council or Local Authority': 'Social (council)',
+        'Social rented: Other social rented': 'Social (other)',
+        'Private rented: Private landlord or letting agency': 'Private rented',
+        'Private rented: Other private rented': 'Private rented (other)',
+        'Lives rent free': 'Lives rent free',
+      };
+
+      const sorted = obs.sort((a,b) => (b.obs_value?.value||0) - (a.obs_value?.value||0));
+      const labels = sorted.map(o => groupMap[o.c2021_tenure_9?.description] || o.c2021_tenure_9?.description || '?');
+      const values = sorted.map(o => o.obs_value?.value || 0);
+      const total = values.reduce((s, v) => s + v, 0);
+
+      setCardContent('card-tenure', `
+        <p class="stat-sub" style="margin-bottom:0.8rem">Census 2021 · ${total.toLocaleString()} households in this LSOA area</p>
+        <canvas id="tenureCanvas" height="240"></canvas>
+      `);
+
+      tenureChart = makeBarChart(
+        'tenureCanvas',
+        labels,
+        values,
+        labels.map((_, i) => `hsl(${270 + i * 10}, ${65 - i * 4}%, ${48 + i * 5}%)`),
+        total
+      );
+    } catch (err) {
+      setCardContent('card-tenure', `
+        <p class="error-msg">
+          Data unavailable — <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a>
+          <br><small>${err.message}</small>
+        </p>`);
+    }
+  }
+
+  /* ── Card 5: Schools — OpenStreetMap Overpass (GET) ── */
+  async function renderSchools(lat, lng, district) {
+    try {
+      const radiusM = 3219; // ~2 miles
+      // Use GET request — avoids POST CORS preflight issues in some browsers
+      const query = `[out:json][timeout:25];(node[amenity=school](around:${radiusM},${lat},${lng});way[amenity=school](around:${radiusM},${lat},${lng}););out center tags;`;
+      const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
+      if (!res.ok) throw new Error(`Overpass API ${res.status}`);
+      const data = await res.json();
+
+      let schools = (data.elements || []).map(el => {
+        const sLat = el.lat ?? el.center?.lat ?? 0;
+        const sLng = el.lon ?? el.center?.lon ?? 0;
+        return { tags: el.tags || {}, _distKm: distKm(lat, lng, sLat, sLng) };
+      }).filter(s => s.tags.name)
+        .sort((a, b) => a._distKm - b._distKm)
+        .slice(0, 15);
+
+      if (!schools.length) {
+        setCardContent('card-schools', '<p class="error-msg">No schools found within 2 miles.</p>');
+        return;
+      }
+
+      const phaseLabel = tags => {
+        const lvl = tags['isced:level'] || '';
+        if (/\b[01]\b/.test(lvl)) return 'Primary';
+        if (/\b[23]\b/.test(lvl)) return 'Secondary';
+        const t = (tags['school:type'] || tags.operator_type || '').toLowerCase();
+        if (/primary|infant|junior|prep/.test(t)) return 'Primary';
+        if (/secondary|high|upper/.test(t)) return 'Secondary';
+        return 'School';
+      };
+
+      const googleKeyNote = GOOGLE_PLACES_KEY ? '' : '<span class="google-key-note">Add Google API key</span>';
+
+      const rows = schools.map(s => {
+        const name = s.tags.name;
+        const urn = s.tags['ref:edubase'] || s.tags['ref:GB:edubase'] || '';
+        // Direct Ofsted report URL when URN available, else Ofsted search
+        const ofstedUrl = urn
+          ? `https://reports.ofsted.gov.uk/provider/21/${urn}`
+          : `https://reports.ofsted.gov.uk/search?q=${encodeURIComponent(name)}`;
+        const phase = phaseLabel(s.tags);
+        const dist = kmToMiles(s._distKm);
+        return `<tr>
+          <td><a href="${ofstedUrl}" target="_blank" style="color:#3a7bd5;text-decoration:none">${name}</a></td>
+          <td>${phase}</td>
+          <td>${dist} mi</td>
+          <td>${GOOGLE_PLACES_KEY ? '—' : googleKeyNote}</td>
+        </tr>`;
+      }).join('');
+
+      setCardContent('card-schools', `
+        <div class="schools-table-wrap">
+          <table>
+            <thead><tr><th>School</th><th>Phase</th><th>Distance</th><th>Google ★</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <p class="schools-note">School names link directly to Ofsted reports. Catchment boundaries vary — contact ${district} Council to confirm exact catchment for your address.</p>
+      `);
+    } catch (err) {
+      setCardContent('card-schools', `
+        <p class="error-msg">
+          Schools data unavailable: ${err.message}<br>
+          <a href="https://reports.ofsted.gov.uk/search" target="_blank">Search Ofsted directly →</a>
+        </p>`);
+    }
+  }
+
+  /* ── Card 6: Religion — Nomis Census 2021 TS030 ── */
+  async function renderReligion(lsoaCode) {
+    try {
+      if (!lsoaCode) throw new Error('No LSOA code available');
+      // NM_2049_1 = TS030 Religion; C2021_RELIGION_10 value 0 = total, 1-9 = categories
+      const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2049_1.data.json?geography=${lsoaCode}&C2021_RELIGION_10=1,2,3,4,5,6,7,8,9&measures=20100&select=C2021_RELIGION_10_name,obs_value`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+      if (!res.ok) throw new Error(`Nomis API ${res.status}`);
+      const data = await res.json();
+      const obs = data.obs || [];
+      if (!obs.length) throw new Error('No data returned');
+
+      const sorted = obs.sort((a,b) => (b.obs_value?.value||0) - (a.obs_value?.value||0));
+      const labels = sorted.map(o => o.c2021_religion_10?.description || '?');
+      const values = sorted.map(o => o.obs_value?.value || 0);
+      const total = values.reduce((s, v) => s + v, 0);
+
+      const religionColors = {
+        'Christian':        'hsl(210, 65%, 48%)',
+        'No religion':      'hsl(200, 15%, 60%)',
+        'Muslim':           'hsl(152, 50%, 42%)',
+        'Hindu':            'hsl(30, 80%, 55%)',
+        'Sikh':             'hsl(44, 90%, 50%)',
+        'Jewish':           'hsl(50, 70%, 45%)',
+        'Buddhist':         'hsl(170, 55%, 42%)',
+        'Any other religion': 'hsl(280, 45%, 55%)',
+        'Not answered':     'hsl(0, 0%, 75%)',
+      };
+
+      setCardContent('card-religion', `
+        <p class="stat-sub" style="margin-bottom:0.8rem">Census 2021 · ${total.toLocaleString()} residents in this LSOA area</p>
+        <canvas id="religionCanvas" height="260"></canvas>
+      `);
+
+      religionChart = makeBarChart(
+        'religionCanvas',
+        labels,
+        values,
+        labels.map(l => religionColors[l] || 'hsl(240, 40%, 60%)'),
+        total
+      );
+    } catch (err) {
+      setCardContent('card-religion', `
+        <p class="error-msg">
+          Data unavailable — <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a>
+          <br><small>${err.message}</small>
+        </p>`);
+    }
+  }
+</script>
+</body>
+</html>
