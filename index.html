@@ -99,6 +99,23 @@
     /* ── Error / fallback ── */
     .error-msg { font-size: 0.85rem; color: #999; font-style: italic; }
     .error-msg a { color: #3a7bd5; }
+
+    /* ── Transport card ── */
+    .card.span-full { grid-column: 1 / -1; }
+    .transport-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+    }
+    @media (max-width: 700px) { .transport-grid { grid-template-columns: 1fr; } }
+    .transport-subhead {
+      font-size: 0.82rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: #4a5568; margin-bottom: 0.6rem;
+    }
+    .route-badge {
+      display: inline-block; background: #0d1b2a; color: #fff;
+      font-weight: 700; font-size: 0.75rem; padding: 0.15rem 0.45rem;
+      border-radius: 4px; min-width: 2rem; text-align: center; white-space: nowrap;
+    }
+    .transport-note { font-size: 0.72rem; color: #bbb; margin-top: 0.5rem; font-style: italic; }
   </style>
 </head>
 <body>
@@ -119,6 +136,7 @@
   <div class="card" id="card-tenure"><h2>🏠 Housing Tenure</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
   <div class="card" id="card-schools"><h2>🏫 Schools Nearby (2 miles)</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
   <div class="card" id="card-religion"><h2>✝ Religion</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
+  <div class="card span-full" id="card-transport"><h2>🚌 Nearby Transport</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
 </div>
 
 <footer id="footer" style="display:none; text-align:center; padding:1.5rem; font-size:0.78rem; color:#aaa; background:#fff; border-top:1px solid #e0e6ed; margin-top:1rem;">
@@ -156,6 +174,14 @@
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
   const kmToMiles = km => (km * 0.621371).toFixed(2);
+
+  /* ── Wrap long label strings for Chart.js multi-line ticks ── */
+  function wrapLabel(str, maxLen = 22) {
+    if (!Array.isArray(str) && str.length <= maxLen) return str;
+    const idx = str.lastIndexOf(' ', maxLen);
+    if (idx <= 0) return str;
+    return [str.slice(0, idx), str.slice(idx + 1)];
+  }
 
   /* ── Horizontal bar chart with value labels ── */
   function makeBarChart(canvasId, labels, values, color, total) {
@@ -222,7 +248,7 @@
     btn.disabled = true;
     btn.textContent = 'Searching…';
 
-    const cards = ['card-location','card-crime','card-ethnicity','card-tenure','card-schools','card-religion'];
+    const cards = ['card-location','card-crime','card-ethnicity','card-tenure','card-schools','card-religion','card-transport'];
     const results = document.getElementById('results');
     results.classList.add('visible');
     cards.forEach(id => {
@@ -256,6 +282,7 @@
         renderTenure(lsoaCode),
         renderSchools(lat, lng, district),
         renderReligion(lsoaCode),
+        renderTransport(lat, lng),
       ]);
 
     } catch (err) {
@@ -359,11 +386,13 @@
       const values = sorted.map(o => o.obs_value?.value || 0);
       const total = values.reduce((s, v) => s + v, 0);
 
-      // Shorten labels
-      const shorten = l => l.replace(/^(Asian, Asian British or Asian Welsh): /, '')
-                            .replace(/^(White): /, 'White: ')
-                            .replace(/^(Black, Black British, Black Welsh, Caribbean or African): /, 'Black: ')
-                            .replace(/^(Mixed or Multiple ethnic groups): /, 'Mixed: ');
+      // Shorten labels — trim verbose prefix text from Census category names
+      const shorten = l => l
+        .replace(/^Asian, Asian British or Asian Welsh: /, '')
+        .replace(/^White: English, Welsh, Scottish, Northern Irish or British$/, 'White: British')
+        .replace(/^White: /, 'White: ')
+        .replace(/^Black, Black British, Black Welsh, Caribbean or African: /, 'Black: ')
+        .replace(/^Mixed or Multiple ethnic groups: /, 'Mixed: ');
 
       setCardContent('card-ethnicity', `
         <p class="stat-sub" style="margin-bottom:0.8rem">Census 2021 · ${total.toLocaleString()} residents in this LSOA area</p>
@@ -372,7 +401,7 @@
 
       ethnicityChart = makeBarChart(
         'ethnicityCanvas',
-        labels.map(shorten),
+        labels.map(l => wrapLabel(shorten(l))),
         values,
         labels.map((_, i) => `hsl(${185 + i * 8}, ${70 - i * 3}%, ${42 + i * 4}%)`),
         total
@@ -499,6 +528,136 @@
           Schools data unavailable: ${err.message}<br>
           <a href="https://reports.ofsted.gov.uk/search" target="_blank">Search Ofsted directly →</a>
         </p>`);
+    }
+  }
+
+  /* ── Card 7: Nearby Transport — Overpass / OpenStreetMap ── */
+  async function renderTransport(lat, lng) {
+    try {
+      // Single Overpass query: bus stops + their route relations + railway stations
+      const query = `[out:json][timeout:30];
+(node[highway=bus_stop](around:400,${lat},${lng});node[public_transport=stop_position][bus=yes](around:400,${lat},${lng});)->.busstops;
+relation[type=route][route~"bus|tram|coach|share_taxi"](bn.busstops)->.busroutes;
+(node[railway=station](around:3000,${lat},${lng});way[railway=station](around:3000,${lat},${lng});)->.railstations;
+(.busstops;.busroutes;.railstations;);out center tags;`;
+
+      const res = await fetch(
+        `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`,
+        { signal: AbortSignal.timeout(30000) }
+      );
+      if (!res.ok) throw new Error(`Overpass API ${res.status}`);
+      const data = await res.json();
+      const elements = data.elements || [];
+
+      /* ── Bus routes ── */
+      const routeMap = {};
+      elements
+        .filter(el => el.type === 'relation' && el.tags?.ref)
+        .forEach(el => {
+          const ref = el.tags.ref;
+          if (!routeMap[ref]) {
+            routeMap[ref] = {
+              ref,
+              from:     el.tags.from     || el.tags.origin      || '',
+              to:       el.tags.to       || el.tags.destination  || '',
+              operator: el.tags.operator || el.tags.network      || '',
+              interval: el.tags.interval || el.tags['interval:peak'] || '',
+            };
+          }
+        });
+
+      const busRoutes = Object.values(routeMap).sort((a, b) => {
+        const an = parseInt(a.ref), bn2 = parseInt(b.ref);
+        return (isNaN(an) || isNaN(bn2)) ? a.ref.localeCompare(b.ref) : an - bn2;
+      });
+
+      // Fallback: list unique stop names when no route relations found
+      const stopNames = [...new Set(
+        elements
+          .filter(el => el.type === 'node' && (el.tags?.highway === 'bus_stop' || el.tags?.public_transport === 'stop_position') && el.tags?.name)
+          .map(el => el.tags.name)
+      )].slice(0, 8);
+
+      /* ── Railway stations ── */
+      const stations = elements
+        .filter(el => el.tags?.railway === 'station' && el.tags?.name)
+        .map(el => {
+          const sLat = el.lat ?? el.center?.lat ?? 0;
+          const sLng = el.lon ?? el.center?.lon ?? 0;
+          return { name: el.tags.name, operator: el.tags.operator || el.tags.network || '', dist: distKm(lat, lng, sLat, sLng) };
+        })
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 6);
+
+      /* ── Build HTML ── */
+      const formatInterval = secs => {
+        if (!secs) return '—';
+        const mins = Math.round(parseInt(secs) / 60);
+        return mins > 0 ? `~${mins} min` : '—';
+      };
+
+      // Bus section HTML
+      let busHtml;
+      if (busRoutes.length) {
+        const rows = busRoutes.map(r => `
+          <tr>
+            <td><span class="route-badge">${r.ref}</span></td>
+            <td>${r.from || '—'}</td>
+            <td>${r.to || '—'}</td>
+            <td>${r.operator || '—'}</td>
+            <td>${formatInterval(r.interval)}</td>
+          </tr>`).join('');
+        busHtml = `
+          <div class="schools-table-wrap">
+            <table>
+              <thead><tr><th>Route</th><th>From</th><th>To</th><th>Operator</th><th>Freq</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <p class="transport-note">Bus routes stopping within ~400 m · route data from OpenStreetMap volunteers</p>`;
+      } else if (stopNames.length) {
+        busHtml = `<p class="error-msg" style="margin-bottom:0.4rem">Route details not yet mapped — stops found nearby:</p>
+          <p style="font-size:0.82rem;color:#555">${stopNames.join(' · ')}</p>
+          <p class="transport-note">Route numbers missing from OpenStreetMap for this area</p>`;
+      } else {
+        busHtml = `<p class="error-msg">No bus stops found within 400 m (or not yet mapped in OpenStreetMap)</p>`;
+      }
+
+      // Rail section HTML
+      let railHtml;
+      if (stations.length) {
+        const rows = stations.map(s => `
+          <tr>
+            <td>${s.name}</td>
+            <td>${kmToMiles(s.dist)} mi</td>
+            <td>${s.operator || '—'}</td>
+          </tr>`).join('');
+        railHtml = `
+          <div class="schools-table-wrap">
+            <table>
+              <thead><tr><th>Station</th><th>Distance</th><th>Operator</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <p class="transport-note">Railway stations within 3 km</p>`;
+      } else {
+        railHtml = `<p class="error-msg">No railway stations found within 3 km</p>`;
+      }
+
+      setCardContent('card-transport', `
+        <div class="transport-grid">
+          <div>
+            <p class="transport-subhead">🚌 Bus Routes</p>
+            ${busHtml}
+          </div>
+          <div>
+            <p class="transport-subhead">🚂 Railway Stations</p>
+            ${railHtml}
+          </div>
+        </div>
+      `);
+    } catch (err) {
+      setCardContent('card-transport', `<p class="error-msg">Transport data unavailable: ${err.message}</p>`);
     }
   }
 
