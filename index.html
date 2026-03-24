@@ -94,7 +94,6 @@
     td { padding: 0.45rem 0.5rem; border-bottom: 1px solid #f0f2f5; }
     tr:last-child td { border-bottom: none; }
     .schools-note { font-size: 0.75rem; color: #999; margin-top: 0.8rem; }
-    .google-key-note { font-size: 0.75rem; color: #bbb; font-style: italic; }
 
     /* ── Error / fallback ── */
     .error-msg { font-size: 0.85rem; color: #999; font-style: italic; }
@@ -644,8 +643,6 @@
         return 'School';
       };
 
-      const googleKeyNote = GOOGLE_PLACES_KEY ? '' : '<span class="google-key-note">Add Google API key</span>';
-
       const rows = schools.map(s => {
         const name = s.tags.name;
         const urn = s.tags['ref:edubase'] || s.tags['ref:GB:edubase'] || '';
@@ -659,14 +656,13 @@
           <td><a href="${ofstedUrl}" target="_blank" style="color:#3a7bd5;text-decoration:none">${name}</a></td>
           <td>${phase}</td>
           <td>${dist} mi</td>
-          <td>${GOOGLE_PLACES_KEY ? '—' : googleKeyNote}</td>
         </tr>`;
       }).join('');
 
       setCardContent('card-schools', `
         <div class="schools-table-wrap">
           <table>
-            <thead><tr><th>School</th><th>Phase</th><th>Distance</th><th>Google ★</th></tr></thead>
+            <thead><tr><th>School</th><th>Phase</th><th>Distance</th></tr></thead>
             <tbody>${rows}</tbody>
           </table>
         </div>
