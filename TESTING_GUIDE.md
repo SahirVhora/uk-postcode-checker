@@ -365,7 +365,7 @@ console.log(POSTCODE_REGEX.test("B90 2DH")); // Should be true
 ```
 
 ### If API timeouts occur:
-1. Check `API_TIMEOUTS` constants — may need to increase
+1. Check `API_TIMEOUTS` constants - may need to increase
 2. Check browser Network tab for slow requests
 3. Verify API endpoints are responding
 

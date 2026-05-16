@@ -1,11 +1,11 @@
 # UK Postcode Checker
 
-**Quick demographic lookup for UK postcodes — crime charts, census breakdowns, schools, and transport. Fast and simple.**
+**Quick demographic lookup for UK postcodes - crime charts, census breakdowns, schools, and transport. Fast and simple.**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Toolkit](https://img.shields.io/badge/part%20of-UK%20Property%20Toolkit-blue)](https://github.com/SahirVhora?tab=repositories&q=uk-property+OR+PropertyPulse+OR+HomeFinder+OR+postcode-checker)
 
-Part of the **[UK Property Toolkit](https://github.com/SahirVhora?tab=repositories&q=uk-property+OR+PropertyPulse+OR+HomeFinder+OR+postcode-checker)** — three free tools for UK home buyers.
+Part of the **[UK Property Toolkit](https://github.com/SahirVhora?tab=repositories&q=uk-property+OR+PropertyPulse+OR+HomeFinder+OR+postcode-checker)** - three free tools for UK home buyers.
 
 | Tool | Purpose | Best For |
 |---|---|---|
@@ -39,12 +39,12 @@ cd uk-postcode-checker
 open index.html
 ```
 
-No server, no install, no build step. Single HTML file — just open it.
+No server, no install, no build step. Single HTML file - just open it.
 
 ## Google Places API (Optional)
 
 To enable school star ratings:
-1. Get a key from [Google Cloud Console](https://console.cloud.google.com) — enable **Places API**
+1. Get a key from [Google Cloud Console](https://console.cloud.google.com) - enable **Places API**
 2. Open `index.html` and set `const GOOGLE_PLACES_KEY = "YOUR_KEY"`
 3. Without a key, the column shows a muted note and everything else still works
 
@@ -61,16 +61,16 @@ To enable school star ratings:
 
 ## 🔗 Also in the UK Property Toolkit
 
-- **[PropertyPulse-UK](https://github.com/SahirVhora/PropertyPulse-UK)** — Full intelligence dashboard: crime scoring, flood risk, air quality, composite scores, interactive map
-- **[UK-HomeFinder](https://github.com/SahirVhora/UK-HomeFinder)** — Property comparison tracker, SDLT calculator, readiness checklist, Rightmove/Zoopla URL parser
+- **[PropertyPulse-UK](https://github.com/SahirVhora/PropertyPulse-UK)** - Full intelligence dashboard: crime scoring, flood risk, air quality, composite scores, interactive map
+- **[UK-HomeFinder](https://github.com/SahirVhora/UK-HomeFinder)** - Property comparison tracker, SDLT calculator, readiness checklist, Rightmove/Zoopla URL parser
 
 ## Notes
 
 - Crime data fetched for the latest reliable month in the Police API
 - Census data from 2021 via LSOA geography codes
-- School catchment boundaries are indicative — confirm with local council
+- School catchment boundaries are indicative - confirm with local council
 - Privacy-first: no user data stored or transmitted
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+MIT - see [LICENSE](LICENSE)

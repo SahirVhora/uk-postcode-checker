@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sahir's UK Postcode Checker — Now part of PropertyPulse</title>
-<meta name="description" content="UK Postcode Area Intelligence — quick postcode lookup with area demographics, property data, and local insights.">
+  <title>Sahir's UK Postcode Checker - Now part of PropertyPulse</title>
+<meta name="description" content="UK Postcode Area Intelligence - quick postcode lookup with area demographics, property data, and local insights.">
 <meta property="og:image" content="https://sahirvhora.github.io/uk-postcode-checker/preview.svg">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
@@ -127,9 +127,9 @@
 <body>
 
 <div style="background:linear-gradient(90deg,#E11D48,#BE123C);color:#fff;padding:12px 20px;text-align:center;font-family:system-ui,sans-serif;font-size:14px;position:sticky;top:0;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.15)">
-  ⚡ <b>This tool has moved!</b> Get an improved experience at 
+  ⚡ <b>This tool has moved!</b> Get an improved experience at
   <a href="https://sahirvhora.github.io/PropertyPulse-UK/" style="color:#fff;font-weight:800;text-decoration:underline">PropertyPulse UK →</a>
-  — schools, crime, transport, flood risk, house prices & investment scoring.
+  - schools, crime, transport, flood risk, house prices & investment scoring.
   Need to compare homes? <a href="https://sahirvhora.github.io/UK-HomeFinder/" style="color:#fff;font-weight:800;text-decoration:underline">UK HomeFinder →</a>
   Need to compare homes? <a href="https://sahirvhora.github.io/UK-HomeFinder/" style="color:#fff;font-weight:800;text-decoration:underline">UK HomeFinder →</a>
 </div>
@@ -167,23 +167,23 @@
   // ════════════════════════════════════════════════════════════════
   // CONFIGURATION & CONSTANTS
   // ════════════════════════════════════════════════════════════════
-  
+
   const GOOGLE_PLACES_KEY = "";  // TODO: Get free key at console.cloud.google.com if needed
-  
+
   /* Search configuration */
   const SEARCH_RADIUS = {
     schools: 3219,      // meters (~2 miles)
     busStops: 400,      // meters
     railStations: 3000, // meters
   };
-  
+
   const API_TIMEOUTS = {
     postcodes_io: 8000,
     police: 10000,
     nomis: 15000,
     overpass: 60000,  // Increased from 30s to 60s for complex geospatial queries
   };
-  
+
   /* Error messages */
   const ERROR_MESSAGES = {
     INVALID_POSTCODE: 'Please enter a valid UK postcode (e.g., B90 2DH)',
@@ -193,26 +193,26 @@
     RATE_LIMITED: 'Too many requests. Please wait a moment and try again.',
     API_ERROR: (name, msg) => `${name} data unavailable: ${msg}`,
   };
-  
+
   const POSTCODE_REGEX = /^[A-Z]{1,2}[0-9]{1,2}[A-Z]?\s?[0-9][A-Z]{2}$/i;
-  
+
   /* Chart instances */
   let crimeChart = null, ethnicityChart = null, tenureChart = null, religionChart = null;
-  
+
   /* Abort controller for preventing race conditions */
   let searchAbortController = null;
 
   // ════════════════════════════════════════════════════════════════
   // HELPER FUNCTIONS
   // ════════════════════════════════════════════════════════════════
-  
+
   /**
    * Normalise postcode by removing spaces and converting to uppercase
    * @param {string} raw - Raw postcode input
    * @returns {string} Normalised postcode
    */
   const normalisePostcode = raw => raw.replace(/\s+/g, '').toUpperCase();
-  
+
   /**
    * Validate postcode format
    * @param {string} pc - Postcode to validate
@@ -221,7 +221,7 @@
   function isValidPostcode(pc) {
     return POSTCODE_REGEX.test(pc.trim());
   }
-  
+
   /**
    * Show postcode validation error
    * @param {string} message - Error message to display
@@ -231,7 +231,7 @@
     hint.textContent = message;
     hint.style.display = 'block';
   }
-  
+
   /**
    * Clear postcode validation error
    */
@@ -239,7 +239,7 @@
     const hint = document.getElementById('postcode-hint');
     hint.style.display = 'none';
   }
-  
+
   const spinner = () => '<div class="loading-wrap"><div class="spinner"></div></div>';
 
   /**
@@ -349,25 +349,25 @@
   // ════════════════════════════════════════════════════════════════
   // MAIN SEARCH FUNCTION
   // ════════════════════════════════════════════════════════════════
-  
+
   /**
    * Main search function: validates postcode and fetches all data
    * Prevents race conditions using AbortController
    */
   async function runSearch() {
     const raw = document.getElementById('postcodeInput').value.trim();
-    
+
     // Validate postcode input
     if (!raw) {
       showPostcodeError(ERROR_MESSAGES.INVALID_POSTCODE);
       return;
     }
-    
+
     if (!isValidPostcode(raw)) {
       showPostcodeError(ERROR_MESSAGES.INVALID_POSTCODE);
       return;
     }
-    
+
     clearPostcodeError();
 
     const pc = normalisePostcode(raw);
@@ -375,7 +375,7 @@
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
     btn.textContent = 'Searching…';
-    
+
     // Cancel any previous request
     if (searchAbortController) searchAbortController.abort();
     searchAbortController = new AbortController();
@@ -408,7 +408,7 @@
       const lat = r.latitude;
       const lng = r.longitude;
       const lsoaCode = r.codes?.lsoa || r.codes?.lsoa21 || '';  // e.g. E01010220 (~1,500 people)
-      const district = r.admin_district || '—';
+      const district = r.admin_district || ' - ';
 
       renderLocation(r, lat, lng);
 
@@ -445,7 +445,7 @@
   // ════════════════════════════════════════════════════════════════
   // RENDER FUNCTIONS - Data Display
   // ════════════════════════════════════════════════════════════════
-  
+
   /**
    * Render location card with administrative boundaries and map
    */
@@ -455,12 +455,12 @@
     const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bboxLng0},${bboxLat0},${bboxLng1},${bboxLat1}&layer=mapnik&marker=${lat},${lng}`;
     setCardContent('card-location', `
       <div class="info-grid">
-        <div class="info-item"><label>District</label><span>${r.admin_district || '—'}</span></div>
-        <div class="info-item"><label>Ward</label><span>${r.admin_ward || '—'}</span></div>
-        <div class="info-item"><label>Constituency</label><span>${r.parliamentary_constituency || '—'}</span></div>
-        <div class="info-item"><label>Region</label><span>${r.region || '—'}</span></div>
-        <div class="info-item"><label>Country</label><span>${r.country || '—'}</span></div>
-        <div class="info-item"><label>LSOA</label><span>${r.lsoa || '—'}</span></div>
+        <div class="info-item"><label>District</label><span>${r.admin_district || ' - '}</span></div>
+        <div class="info-item"><label>Ward</label><span>${r.admin_ward || ' - '}</span></div>
+        <div class="info-item"><label>Constituency</label><span>${r.parliamentary_constituency || ' - '}</span></div>
+        <div class="info-item"><label>Region</label><span>${r.region || ' - '}</span></div>
+        <div class="info-item"><label>Country</label><span>${r.country || ' - '}</span></div>
+        <div class="info-item"><label>LSOA</label><span>${r.lsoa || ' - '}</span></div>
       </div>
       <iframe class="map-frame" src="${mapUrl}" loading="lazy" title="Map"></iframe>
     `);
@@ -474,7 +474,7 @@
       // Get latest available month from Police API
       const latestRes = await fetch('https://data.police.uk/api/crime-last-updated');
       const latestJson = await latestRes.json();
-      // date is "YYYY-MM-DD" — take YYYY-MM, then back one month as it's the last updated month
+      // date is "YYYY-MM-DD" - take YYYY-MM, then back one month as it's the last updated month
       const rawDate = latestJson.date || '';
       let crimeDate = rawDate.slice(0, 7); // "YYYY-MM"
       // The date returned is when data was last updated; subtract one month to get latest data month
@@ -542,7 +542,7 @@
       const values = sorted.map(o => o.obs_value?.value || 0);
       const total = values.reduce((s, v) => s + v, 0);
 
-      // Shorten labels — trim verbose prefix text from Census category names
+      // Shorten labels - trim verbose prefix text from Census category names
       const shorten = l => l
         .replace(/^Asian, Asian British or Asian Welsh: /, '')
         .replace(/^White: English, Welsh, Scottish, Northern Irish or British$/, 'White: British')
@@ -565,7 +565,7 @@
     } catch (err) {
       if (err.name !== 'AbortError') {
         setCardContent('card-ethnicity', `
-          <p class="error-msg">Data unavailable — <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a><br><small>${err.message}</small></p>`);
+          <p class="error-msg">Data unavailable - <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a><br><small>${err.message}</small></p>`);
       }
     }
   }
@@ -615,7 +615,7 @@
       if (err.name !== 'AbortError') {
         setCardContent('card-tenure', `
           <p class="error-msg">
-            Data unavailable — <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a>
+            Data unavailable - <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a>
             <br><small>${err.message}</small>
           </p>`);
       }
@@ -628,7 +628,7 @@
   async function renderSchools(lat, lng, district) {
     try {
       const radiusM = SEARCH_RADIUS.schools;
-      // Use GET request — avoids POST CORS preflight issues in some browsers
+      // Use GET request - avoids POST CORS preflight issues in some browsers
       const query = `[out:json][timeout:25];(node[amenity=school](around:${radiusM},${lat},${lng});way[amenity=school](around:${radiusM},${lat},${lng}););out center tags;`;
       const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
       const res = await fetch(url, { signal: searchAbortController.signal, timeout: API_TIMEOUTS.overpass });
@@ -681,7 +681,7 @@
             <tbody>${rows}</tbody>
           </table>
         </div>
-        <p class="schools-note">School names link directly to Ofsted reports. Catchment boundaries vary — contact ${district} Council to confirm exact catchment for your address.</p>
+        <p class="schools-note">School names link directly to Ofsted reports. Catchment boundaries vary - contact ${district} Council to confirm exact catchment for your address.</p>
       `);
     } catch (err) {
       if (err.name !== 'AbortError') {
@@ -756,9 +756,9 @@ relation[type=route][route~"bus|tram|coach|share_taxi"](bn.busstops)->.busroutes
 
       /* ── Build HTML ── */
       const formatInterval = secs => {
-        if (!secs) return '—';
+        if (!secs) return ' - ';
         const mins = Math.round(parseInt(secs) / 60);
-        return mins > 0 ? `~${mins} min` : '—';
+        return mins > 0 ? `~${mins} min` : ' - ';
       };
 
       // Bus section HTML
@@ -767,9 +767,9 @@ relation[type=route][route~"bus|tram|coach|share_taxi"](bn.busstops)->.busroutes
         const rows = busRoutes.map(r => `
           <tr>
             <td><span class="route-badge">${r.ref}</span></td>
-            <td>${r.from || '—'}</td>
-            <td>${r.to || '—'}</td>
-            <td>${r.operator || '—'}</td>
+            <td>${r.from || ' - '}</td>
+            <td>${r.to || ' - '}</td>
+            <td>${r.operator || ' - '}</td>
             <td>${formatInterval(r.interval)}</td>
           </tr>`).join('');
         busHtml = `
@@ -781,7 +781,7 @@ relation[type=route][route~"bus|tram|coach|share_taxi"](bn.busstops)->.busroutes
           </div>
           <p class="transport-note">Bus routes stopping within ~400 m · route data from OpenStreetMap volunteers</p>`;
       } else if (stopNames.length) {
-        busHtml = `<p class="error-msg" style="margin-bottom:0.4rem">Route details not yet mapped — stops found nearby:</p>
+        busHtml = `<p class="error-msg" style="margin-bottom:0.4rem">Route details not yet mapped - stops found nearby:</p>
           <p style="font-size:0.82rem;color:#555">${stopNames.join(' · ')}</p>
           <p class="transport-note">Route numbers missing from OpenStreetMap for this area</p>`;
       } else {
@@ -795,7 +795,7 @@ relation[type=route][route~"bus|tram|coach|share_taxi"](bn.busstops)->.busroutes
           <tr>
             <td>${s.name}</td>
             <td>${kmToMiles(s.dist)} mi</td>
-            <td>${s.operator || '—'}</td>
+            <td>${s.operator || ' - '}</td>
           </tr>`).join('');
         railHtml = `
           <div class="schools-table-wrap">
@@ -875,7 +875,7 @@ relation[type=route][route~"bus|tram|coach|share_taxi"](bn.busstops)->.busroutes
       if (err.name !== 'AbortError') {
         setCardContent('card-religion', `
           <p class="error-msg">
-            Data unavailable — <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a>
+            Data unavailable - <a href="https://www.nomisweb.co.uk" target="_blank">view at nomisweb.co.uk</a>
             <br><small>${err.message}</small>
           </p>`);
       }
