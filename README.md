@@ -55,7 +55,7 @@ To enable school star ratings:
 | [Postcodes.io](https://postcodes.io) | Lat/lng, ward, district, LSOA | None |
 | [Police Data API](https://data.police.uk/docs/) | Street-level crime | Open Government Licence |
 | [ONS Beta API](https://api.beta.ons.gov.uk) | Census 2021 ethnicity & tenure | Open Government Licence |
-| [DfE Education API](https://educationestatesapi.education.gov.uk) | Schools near postcode | Public |
+| [OpenStreetMap Overpass](https://overpass-api.de) | Schools near postcode | Open (ODbL) |
 | [Environment Agency](https://environment.data.gov.uk/flood-monitoring/doc/reference) | Flood risk areas | Open Government Licence |
 | [Chart.js](https://cdnjs.cloudflare.com) | Canvas charts | MIT |
 
