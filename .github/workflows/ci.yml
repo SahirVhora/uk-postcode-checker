@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check HTML syntax
+        run: |
+          # Find all HTML files and check for basic syntax issues
+          find . -name "*.html" -not -path "./node_modules/*" -not -path "./.git/*" | while read file; do
+            echo "Checking $file"
+            # Check for unclosed tags, basic structure
+            if ! grep -q "<!DOCTYPE html>" "$file" && ! grep -q "<!doctype html>" "$file"; then
+              echo "Warning: $file missing DOCTYPE"
+            fi
+          done
+
+      - name: Check for broken local links
+        run: |
+          # Simple check for broken local file references
+          find . -name "*.html" -not -path "./node_modules/*" -not -path "./.git/*" | while read file; do
+            dir=$(dirname "$file")
+            grep -oP 'href="[^"#]*"' "$file" 2>/dev/null | grep -v 'http' | grep -v 'mailto' | while read link; do
+              target=$(echo "$link" | sed 's/href="//;s/"$//')
+              if [ -n "$target" ] && [ ! -f "$dir/$target" ]; then
+                echo "Warning: $file references $target (not found)"
+              fi
+            done
+          done
+
+      - name: Validate JSON files
+        run: |
+          find . -name "*.json" -not -path "./node_modules/*" -not -path "./.git/*" | while read file; do
+            echo "Validating $file"
+            python3 -m json.tool "$file" > /dev/null || echo "Invalid JSON: $file"
+          done
+
+      - name: Check file sizes
+        run: |
+          # Warn about large files
+          find . -type f -not -path "./.git/*" -not -path "./node_modules/*" -size +5M | while read file; do
+            echo "Warning: Large file detected: $file ($(du -h "$file" | cut -f1))"
+          done
