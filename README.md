@@ -3,13 +3,12 @@
 **Quick demographic lookup for UK postcodes - crime charts, census breakdowns, schools, and transport. Fast and simple.**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Toolkit](https://img.shields.io/badge/part%20of-UK%20Property%20Toolkit-blue)](https://github.com/SahirVhora?tab=repositories&q=uk-property+OR+PropertyPulse+OR+HomeFinder+OR+postcode-checker)
+[![Toolkit](https://img.shields.io/badge/part%20of-UK%20Property%20Toolkit-blue)](https://github.com/SahirVhora?tab=repositories&q=uk-property+OR+HomeFinder+OR+postcode-checker)
 
-Part of the **[UK Property Toolkit](https://github.com/SahirVhora?tab=repositories&q=uk-property+OR+PropertyPulse+OR+HomeFinder+OR+postcode-checker)** - three free tools for UK home buyers.
+Part of the **[UK Property Toolkit](https://github.com/SahirVhora?tab=repositories&q=uk-property+OR+HomeFinder+OR+postcode-checker)** - focused free tools for UK home buyers.
 
 | Tool | Purpose | Best For |
 |---|---|---|
-| [PropertyPulse-UK](https://github.com/SahirVhora/PropertyPulse-UK) | Postcode intelligence + scoring + map | Deep area research |
 | [UK-HomeFinder](https://github.com/SahirVhora/UK-HomeFinder) | Property tracking + SDLT + checklist | Active buyers comparing properties |
 | **uk-postcode-checker** ← you are here | Quick demographic lookup | Fast postcode overview |
 
@@ -61,7 +60,6 @@ To enable school star ratings:
 
 ## 🔗 Also in the UK Property Toolkit
 
-- **[PropertyPulse-UK](https://github.com/SahirVhora/PropertyPulse-UK)** - Full intelligence dashboard: crime scoring, flood risk, air quality, composite scores, interactive map
 - **[UK-HomeFinder](https://github.com/SahirVhora/UK-HomeFinder)** - Property comparison tracker, SDLT calculator, readiness checklist, Rightmove/Zoopla URL parser
 
 ## Notes
