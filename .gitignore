@@ -4,3 +4,7 @@ Thumbs.db
 node_modules/
 .env
 *.log
+
+.audit-result.json
+.claude/settings.local.json
+.under-anything/
