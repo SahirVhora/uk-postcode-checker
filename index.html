@@ -211,6 +211,28 @@
   // HELPER FUNCTIONS
   // ════════════════════════════════════════════════════════════════
 
+  function combineAbortSignals(signals) {
+    if (typeof AbortSignal.any === 'function') return AbortSignal.any(signals);
+    const controller = new AbortController();
+    const abortFrom = signal => controller.abort(signal.reason);
+    signals.forEach(signal => {
+      if (signal.aborted) abortFrom(signal);
+      else signal.addEventListener('abort', () => abortFrom(signal), { once: true });
+    });
+    return controller.signal;
+  }
+
+  function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(
+      () => timeoutController.abort(new DOMException('Request timed out', 'TimeoutError')),
+      timeoutMs,
+    );
+    const signals = [options.signal, timeoutController.signal].filter(Boolean);
+    const signal = signals.length > 1 ? combineAbortSignals(signals) : signals[0];
+    return fetch(url, { ...options, signal }).finally(() => clearTimeout(timeoutId));
+  }
+
   /**
    * Normalise postcode by removing spaces and converting to uppercase
    * @param {string} raw - Raw postcode input
@@ -400,9 +422,11 @@
     crimeChart = ethnicityChart = tenureChart = religionChart = null;
 
     try {
-      const pcRes = await fetch(`https://api.postcodes.io/postcodes/${pc}`, {
-        signal: searchAbortController.signal,
-      });
+      const pcRes = await fetchWithTimeout(
+        `https://api.postcodes.io/postcodes/${pc}`,
+        { signal: searchAbortController.signal },
+        API_TIMEOUTS.postcodes_io,
+      );
       if (!pcRes.ok) {
         throw new Error(pcRes.status === 404 ? ERROR_MESSAGES.POSTCODE_NOT_FOUND : `HTTP ${pcRes.status}`);
       }
@@ -477,7 +501,11 @@
   async function renderCrime(lat, lng) {
     try {
       // Get latest available month from Police API
-      const latestRes = await fetch('https://data.police.uk/api/crime-last-updated');
+      const latestRes = await fetchWithTimeout(
+        'https://data.police.uk/api/crime-last-updated',
+        { signal: searchAbortController.signal },
+        API_TIMEOUTS.police,
+      );
       const latestJson = await latestRes.json();
       // date is "YYYY-MM-DD" - take YYYY-MM, then back one month as it's the last updated month
       const rawDate = latestJson.date || '';
@@ -490,7 +518,7 @@
       }
 
       const url = `https://data.police.uk/api/crimes-street/all-crime?lat=${lat}&lng=${lng}&date=${crimeDate}`;
-      const res = await fetch(url, { signal: searchAbortController.signal, timeout: API_TIMEOUTS.police });
+      const res = await fetchWithTimeout(url, { signal: searchAbortController.signal }, API_TIMEOUTS.police);
       if (!res.ok) throw new Error(`Police API ${res.status}`);
       const crimes = await res.json();
 
@@ -536,7 +564,7 @@
       if (!lsoaCode) throw new Error('No LSOA code available');
       const codes = Array.from({length:19}, (_,i) => i + 1).join(',');
       const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2041_1.data.json?geography=${lsoaCode}&C2021_ETH_20=${codes}&measures=20100&select=C2021_ETH_20_name,obs_value`;
-      const res = await fetch(url, { signal: searchAbortController.signal, timeout: API_TIMEOUTS.nomis });
+      const res = await fetchWithTimeout(url, { signal: searchAbortController.signal }, API_TIMEOUTS.nomis);
       if (!res.ok) throw new Error(`Nomis API ${res.status}`);
       const data = await res.json();
       const obs = data.obs || [];
@@ -582,7 +610,7 @@
     try {
       if (!lsoaCode) throw new Error('No LSOA code available');
       const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2072_1.data.json?geography=${lsoaCode}&C2021_TENURE_9=1,2,3,4,5,6,7,8&measures=20100&select=C2021_TENURE_9_name,obs_value`;
-      const res = await fetch(url, { signal: searchAbortController.signal, timeout: API_TIMEOUTS.nomis });
+      const res = await fetchWithTimeout(url, { signal: searchAbortController.signal }, API_TIMEOUTS.nomis);
       if (!res.ok) throw new Error(`Nomis API ${res.status}`);
       const data = await res.json();
       const obs = data.obs || [];
@@ -636,7 +664,7 @@
       // Use GET request - avoids POST CORS preflight issues in some browsers
       const query = `[out:json][timeout:25];(node[amenity=school](around:${radiusM},${lat},${lng});way[amenity=school](around:${radiusM},${lat},${lng}););out center tags;`;
       const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-      const res = await fetch(url, { signal: searchAbortController.signal, timeout: API_TIMEOUTS.overpass });
+      const res = await fetchWithTimeout(url, { signal: searchAbortController.signal }, API_TIMEOUTS.overpass);
       if (!res.ok) throw new Error(`Overpass API ${res.status}`);
       const data = await res.json();
 
@@ -711,9 +739,10 @@ relation[type=route][route~"bus|tram|coach|share_taxi"](bn.busstops)->.busroutes
 (node[railway=station](around:${SEARCH_RADIUS.railStations},${lat},${lng});way[railway=station](around:${SEARCH_RADIUS.railStations},${lat},${lng});)->.railstations;
 (.busstops;.busroutes;.railstations;);out center tags;`;
 
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`,
-        { signal: searchAbortController.signal, timeout: API_TIMEOUTS.overpass }
+        { signal: searchAbortController.signal },
+        API_TIMEOUTS.overpass,
       );
       if (!res.ok) throw new Error(`Overpass API ${res.status}`);
       const data = await res.json();
@@ -841,7 +870,7 @@ relation[type=route][route~"bus|tram|coach|share_taxi"](bn.busstops)->.busroutes
       if (!lsoaCode) throw new Error('No LSOA code available');
       // NM_2049_1 = TS030 Religion; C2021_RELIGION_10 value 0 = total, 1-9 = categories
       const url = `https://www.nomisweb.co.uk/api/v01/dataset/NM_2049_1.data.json?geography=${lsoaCode}&C2021_RELIGION_10=1,2,3,4,5,6,7,8,9&measures=20100&select=C2021_RELIGION_10_name,obs_value`;
-      const res = await fetch(url, { signal: searchAbortController.signal, timeout: API_TIMEOUTS.nomis });
+      const res = await fetchWithTimeout(url, { signal: searchAbortController.signal }, API_TIMEOUTS.nomis);
       if (!res.ok) throw new Error(`Nomis API ${res.status}`);
       const data = await res.json();
       const obs = data.obs || [];
