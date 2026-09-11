@@ -1,6 +1,6 @@
 # UK Postcode Checker
 
-**Quick demographic lookup for UK postcodes - crime charts, census breakdowns, schools, and transport. Fast and simple.**
+**Quick demographic lookup for UK postcodes - crime charts, census breakdowns, schools, planning extensions, and transport. Fast and simple.**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Toolkit](https://img.shields.io/badge/part%20of-UK%20Property%20Toolkit-blue)](https://github.com/SahirVhora?tab=repositories&q=uk-property+OR+HomeFinder+OR+postcode-checker)
@@ -28,6 +28,7 @@ Enter any UK postcode and instantly see:
 | 🏠 **Housing Tenure** | Owned vs rented vs social with chart (ONS Beta API) |
 | 🏫 **Schools Nearby** | 2-mile radius with Google Places ratings (optional) |
 | ✝ **Religion** | Census 2021 distribution with chart (ONS Beta API) |
+| 🏗️ **Planning Extensions** | Extension-related applications within 1 km via PlanIt |
 | 🚌 **Transport** | Train stations and bus stops near postcode |
 
 ## Quick Start
@@ -55,6 +56,7 @@ To enable school star ratings:
 | [Police Data API](https://data.police.uk/docs/) | Street-level crime | Open Government Licence |
 | [ONS Beta API](https://api.beta.ons.gov.uk) | Census 2021 ethnicity & tenure | Open Government Licence |
 | [OpenStreetMap Overpass](https://overpass-api.de) | Schools near postcode | Open (ODbL) |
+| [PlanIt](https://www.planit.org.uk/api/) | Nearby planning extension applications | No key; rate limited |
 | [Environment Agency](https://environment.data.gov.uk/flood-monitoring/doc/reference) | Flood risk areas | Open Government Licence |
 | [Chart.js](https://cdnjs.cloudflare.com) | Canvas charts | MIT |
 
@@ -67,6 +69,7 @@ To enable school star ratings:
 - Crime data fetched for the latest reliable month in the Police API
 - Census data from 2021 via LSOA geography codes
 - School catchment boundaries are indicative - confirm with local council
+- Planning matches are identified from application descriptions and may be incomplete - confirm with the local planning authority
 - Privacy-first: no user data stored or transmitted
 
 ## License
