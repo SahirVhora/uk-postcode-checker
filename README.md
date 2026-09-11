@@ -28,7 +28,7 @@ Enter any UK postcode and instantly see:
 | 🏠 **Housing Tenure** | Owned vs rented vs social with chart (ONS Beta API) |
 | 🏫 **Schools Nearby** | 2-mile radius with Google Places ratings (optional) |
 | ✝ **Religion** | Census 2021 distribution with chart (ONS Beta API) |
-| 🏗️ **Planning Extensions** | Extension-related applications within 1 km via PlanIt |
+| 🏗️ **Planning Extensions** | Searchable five-year extension applications within 1 km via PlanIt |
 | 🚌 **Transport** | Train stations and bus stops near postcode |
 
 ## Quick Start

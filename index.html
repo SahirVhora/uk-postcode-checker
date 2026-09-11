@@ -139,6 +139,21 @@
     .planning-description { min-width: 280px; line-height: 1.35; }
     .planning-description small { display: block; color: #8fa8c0; margin-top: 0.25rem; }
     .planning-note { font-size: 0.75rem; color: #777; margin-top: 0.9rem; line-height: 1.4; }
+    .planning-controls {
+      display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.8rem;
+    }
+    .planning-controls input, .planning-controls select {
+      border: 1px solid #cbd5e0; border-radius: 6px; padding: 0.5rem 0.65rem;
+      font: inherit; color: #1a1a2e; background: #fff;
+    }
+    .planning-controls input { flex: 1 1 280px; }
+    .planning-controls select { flex: 0 1 150px; }
+    .planning-more {
+      display: block; margin: 1rem auto 0; border: 1px solid #3a7bd5; border-radius: 6px;
+      padding: 0.5rem 1rem; background: #fff; color: #3a7bd5; font-weight: 700; cursor: pointer;
+    }
+    .planning-more:hover { background: #f2f7ff; }
+    .planning-more[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -196,7 +211,8 @@
   };
 
   const PLANNING_LOOKBACK_DAYS = 1826; // Approximately five years
-  const PLANNING_MAX_RECORDS = 100;
+  const PLANNING_MAX_RECORDS = 5000; // PlanIt's documented per-request maximum
+  const PLANNING_PAGE_SIZE = 25;
   const PLANNING_CACHE_MS = 60000; // Respect PlanIt's one-request-per-minute guidance
 
   const API_TIMEOUTS = {
@@ -341,7 +357,7 @@
     const description = application?.description || '';
     const applicationType = application?.other_fields?.application_type || '';
     const searchable = `${applicationType} ${description}`;
-    const administrativeFollowUp = /\b(discharge of conditions?|variation of conditions?|non[- ]material amendment|approval of details|details (?:required|reserved) by condition)\b/i;
+    const administrativeFollowUp = /\b(discharge of conditions?|variation of conditions?|non[- ]material amendment|approval of details|details (?:of|submitted|required|reserved).*?conditions?|submitted pursuant to conditions?)\b/i;
     if (administrativeFollowUp.test(searchable)) return '';
 
     const categories = [
@@ -359,6 +375,41 @@
     return new Date(`${value}T00:00:00Z`).toLocaleDateString('en-GB', {
       day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
     });
+  }
+
+  function filterPlanningMatches(matches, query, year) {
+    const normalisedQuery = (query || '').trim().toLowerCase();
+    return matches.filter(({ application, kind }) => {
+      const matchesYear = !year || (application?.start_date || '').startsWith(`${year}-`);
+      const searchable = [
+        application?.address,
+        application?.description,
+        application?.uid,
+        application?.name,
+        application?.app_state,
+        kind,
+      ].filter(Boolean).join(' ').toLowerCase();
+      return matchesYear && (!normalisedQuery || searchable.includes(normalisedQuery));
+    });
+  }
+
+  function planningApplicationRow({ application, kind, distance }) {
+    const sourceUrl = application?.link;
+    const description = application?.description || 'Description unavailable';
+    const status = application?.app_state || 'Status unavailable';
+    const reference = application?.uid || application?.name || 'Reference unavailable';
+    const distanceText = Number.isFinite(distance) ? `${distance.toFixed(2)} km away` : 'Distance unavailable';
+    const safeSourceUrl = safeExternalUrl(sourceUrl);
+    const linkedReference = safeSourceUrl === '#'
+      ? escapeHtml(reference)
+      : `<a href="${safeSourceUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(reference)}</a>`;
+
+    return `<tr>
+      <td>${formatPlanningDate(application?.start_date)}</td>
+      <td>${escapeHtml(application?.address || 'Address unavailable')}</td>
+      <td class="planning-description">${escapeHtml(description)}<small>${escapeHtml(kind)} · ${escapeHtml(distanceText)} · ${linkedReference}</small></td>
+      <td><span class="planning-status">${escapeHtml(status)}</span></td>
+    </tr>`;
   }
 
   /**
@@ -815,7 +866,8 @@
           pg_sz: String(PLANNING_MAX_RECORDS),
           max_recs: String(PLANNING_MAX_RECORDS),
           sort: 'start_date.desc.nullslast',
-          select: 'name,uid,start_date,address,description,location,link,app_state,other_fields',
+          // Keep the five-year response below PlanIt's 1 MB limit by requesting display fields only.
+          select: 'name,uid,start_date,address,description,location,link,app_state',
         });
         const res = await fetchWithTimeout(
           `https://www.planit.org.uk/api/applics/json?${params}`,
@@ -841,8 +893,7 @@
           return { application, kind, distance };
         })
         .filter(match => match.kind)
-        .sort((a, b) => (b.application.start_date || '').localeCompare(a.application.start_date || ''))
-        .slice(0, 10);
+        .sort((a, b) => (b.application.start_date || '').localeCompare(a.application.start_date || ''));
 
       if (!matches.length) {
         setCardContent('card-planning', `
@@ -852,34 +903,62 @@
         return;
       }
 
-      const rows = matches.map(({ application, kind, distance }) => {
-        const sourceUrl = application?.other_fields?.docs_url || application?.other_fields?.source_url || application?.link;
-        const description = application?.description || application?.other_fields?.application_type || 'Description unavailable';
-        const status = application?.app_state || application?.other_fields?.status || 'Status unavailable';
-        const reference = application?.uid || application?.name || 'Reference unavailable';
-        const distanceText = Number.isFinite(distance) ? `${distance.toFixed(2)} km away` : 'Distance unavailable';
-        const linkedReference = safeExternalUrl(sourceUrl) === '#'
-          ? escapeHtml(reference)
-          : `<a href="${safeExternalUrl(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(reference)}</a>`;
-
-        return `<tr>
-          <td>${formatPlanningDate(application?.start_date)}</td>
-          <td>${escapeHtml(application?.address || 'Address unavailable')}</td>
-          <td class="planning-description">${escapeHtml(description)}<small>${escapeHtml(kind)} · ${escapeHtml(distanceText)} · ${linkedReference}</small></td>
-          <td><span class="planning-status">${escapeHtml(status)}</span></td>
-        </tr>`;
-      }).join('');
+      const years = [...new Set(matches
+        .map(({ application }) => (application?.start_date || '').slice(0, 4))
+        .filter(year => /^\d{4}$/.test(year)))];
+      const yearOptions = years.map(year => `<option value="${year}">${year}</option>`).join('');
+      const coverageNote = records.length < PLANNING_MAX_RECORDS
+        ? `All ${records.length.toLocaleString()} available nearby applications were searched.`
+        : `The first ${PLANNING_MAX_RECORDS.toLocaleString()} nearby applications were searched (PlanIt API limit).`;
 
       setCardContent('card-planning', `
-        <p class="stat-sub">${matches.length} recent extension-related ${matches.length === 1 ? 'application' : 'applications'} identified within 1 km</p>
+        <p class="stat-sub">${matches.length.toLocaleString()} extension-related ${matches.length === 1 ? 'application' : 'applications'} identified in the available five-year data</p>
+        <div class="planning-controls">
+          <input id="planningSearchInput" type="search" placeholder="Search address, proposal or reference" aria-label="Search planning applications" />
+          <select id="planningYearFilter" aria-label="Filter planning applications by year">
+            <option value="">All years</option>
+            ${yearOptions}
+          </select>
+        </div>
+        <p class="stat-sub" id="planningResultsSummary" aria-live="polite"></p>
         <div class="schools-table-wrap">
           <table>
             <thead><tr><th>Submitted</th><th>Address</th><th>Proposal</th><th>Status</th></tr></thead>
-            <tbody>${rows}</tbody>
+            <tbody id="planningRows"></tbody>
           </table>
         </div>
-        <p class="planning-note">Indicative matches from <a href="https://www.planit.org.uk" target="_blank" rel="noopener noreferrer">PlanIt</a>, classified from application descriptions. Coverage and status may be incomplete - verify details on the linked local authority record.</p>
+        <button class="planning-more" id="planningShowMore" type="button">Show 25 more</button>
+        <p class="planning-note">${coverageNote} Indicative matches from <a href="https://www.planit.org.uk" target="_blank" rel="noopener noreferrer">PlanIt</a>, classified from application descriptions. Coverage and status may be incomplete - verify details on the linked planning record.</p>
       `);
+
+      const searchInput = document.getElementById('planningSearchInput');
+      const yearFilter = document.getElementById('planningYearFilter');
+      const rowsElement = document.getElementById('planningRows');
+      const summaryElement = document.getElementById('planningResultsSummary');
+      const showMoreButton = document.getElementById('planningShowMore');
+      let visibleCount = PLANNING_PAGE_SIZE;
+
+      const updatePlanningTable = () => {
+        const filtered = filterPlanningMatches(matches, searchInput.value, yearFilter.value);
+        const visible = filtered.slice(0, visibleCount);
+        rowsElement.innerHTML = visible.map(planningApplicationRow).join('');
+        summaryElement.textContent = filtered.length
+          ? `Showing ${visible.length.toLocaleString()} of ${filtered.length.toLocaleString()} matching applications`
+          : 'No applications match these filters';
+        showMoreButton.hidden = visible.length >= filtered.length;
+      };
+
+      const resetAndUpdate = () => {
+        visibleCount = PLANNING_PAGE_SIZE;
+        updatePlanningTable();
+      };
+      searchInput.addEventListener('input', resetAndUpdate);
+      yearFilter.addEventListener('change', resetAndUpdate);
+      showMoreButton.addEventListener('click', () => {
+        visibleCount += PLANNING_PAGE_SIZE;
+        updatePlanningTable();
+      });
+      updatePlanningTable();
     } catch (err) {
       if (err.name !== 'AbortError') {
         setCardContent('card-planning', `
