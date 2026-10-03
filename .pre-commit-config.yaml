@@ -7,3 +7,20 @@ repos:
       - id: check-yaml
       - id: check-merge-conflict
       - id: check-added-large-files
+  - repo: local
+    hooks:
+      - id: no-em-dash
+        name: no em dashes in code, docs or UI copy
+        language: pygrep
+        entry: '\xe2\x80\x94'
+        types: [text]
+      - id: no-polygons-in-area-pack
+        name: Area Pack has no polygons or house-level addresses
+        language: system
+        entry: python3 -m pipeline.packcheck
+        files: ^data/area-pack/.*\.json$
+      - id: no-local-data
+        name: local DB, cache and manual downloads are never committed
+        language: fail
+        entry: "local-only files must not be committed (pipeline/cache, data/local, data/manual, .env)"
+        files: ^(pipeline/cache/|data/local/|data/manual/|\.env$)

@@ -1,0 +1,25 @@
+{
+  "school_key": "tga",
+  "urn": 136310,
+  "school_name": "Tudor Grange Academy Solihull",
+  "policy_year": "2027/28",
+  "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/TGA-Solihull-2027-28.pdf",
+  "pan": 280,
+  "tie_break": "Straight-line distance from the home LLPG grid point to the main pedestrian gate, closest first. Random lottery for equal distances.",
+  "categories": [
+    {"priority": 1, "code": "lac", "label": "Looked after and previously looked after children", "requires": {"lac": true}},
+    {"priority": 2, "code": "medical_social", "label": "Exceptional medical and/or social need", "requires": {"medical_social": true}},
+    {"priority": 3, "code": "feeder_st_james", "label": "Pupils of Tudor Grange Primary Academy St James", "requires": {"feeder": "st_james"}},
+    {"priority": 4, "code": "feeder_hockley_heath_in_catchment", "label": "Pupils of Tudor Grange Primary Academy Hockley Heath living in the TGA catchment", "requires": {"feeder": "hockley_heath", "in_catchment": true}},
+    {"priority": 5, "code": "staff_skill_shortage", "label": "Children of staff recruited to a skill-shortage post", "requires": {"staff": true}},
+    {"priority": 6, "code": "catchment", "label": "Other children living in the catchment (siblings first, then distance)", "requires": {"in_catchment": true}},
+    {"priority": 7, "code": "other", "label": "All other children (distance)", "requires": {}}
+  ],
+  "history_label_aliases": [
+    {"match": "all on time applicants offered", "outcome": "all_offered"},
+    {"match": "catchment", "priority": 6},
+    {"match": "sibling", "priority": 6},
+    {"match": "distance", "priority": 7}
+  ],
+  "notes": "History labels are matched by text, not by the priority number printed on older documents, because numbering changed between policy years."
+}

@@ -8,3 +8,14 @@ node_modules/
 .audit-result.json
 .claude/settings.local.json
 .under-anything/
+
+# Area Pack pipeline (local only: raw downloads, master DB, catchment polygons)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+pipeline/cache/
+data/local/
+
+# Official files downloaded by hand for import (see docs/MANUAL_CHECKS.md)
+data/manual/

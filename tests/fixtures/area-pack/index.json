@@ -1,0 +1,460 @@
+{
+ "area": "Shirley and Solihull",
+ "attribution": [
+  "Contains HM Land Registry data (c) Crown copyright and database right 2026. This data is licensed under the Open Government Licence v3.0.",
+  "Contains public sector information licensed under the Open Government Licence v3.0 (DfE, Ofsted, MHCLG, data.police.uk).",
+  "Source: Office for National Statistics licensed under the Open Government Licence v3.0. Contains OS data (c) Crown copyright and database right 2026. Contains Royal Mail data (c) Royal Mail copyright and database right 2026.",
+  "(c) OpenStreetMap contributors, available under the Open Database Licence (ODbL).",
+  "Catchment yes/no flags are derived locally from Solihull Council online maps; boundaries are not republished. Always confirm at solihull.gov.uk/onlinemaps."
+ ],
+ "borough_lad": "E08000029",
+ "distance_note": "Straight-line distance from the postcode centre to the school gate: postcode-centroid estimate, actual LLPG distance may differ by up to ~0.1 mi.",
+ "generated_at": "2026-10-03",
+ "indicator_labels": {
+  "all": "offered in every year shown",
+  "nohist": "no history available",
+  "none": "not offered in any year shown",
+  "safe": "historically safe",
+  "some": "offered in some years shown"
+ },
+ "outcodes": [
+  "B90",
+  "B91",
+  "B94"
+ ],
+ "postcodes": {
+  "B90 3DF": "B90-3D"
+ },
+ "price_basis": "PROXY: median house price (detached, semi, terraced), finest level with 3+ sales; EPC floor areas not loaded",
+ "price_flag_band": [
+  450000,
+  600000
+ ],
+ "schools": {
+  "alderbrook": {
+   "gate_verified": false,
+   "history": [
+    {
+     "applications": null,
+     "entry_point": "national_offer_day",
+     "entry_year": 2026,
+     "first_prefs": null,
+     "last_distance_miles": 1.59,
+     "last_priority": "Distance",
+     "note": null,
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/How-secondary-places-were-offered-24-25-26.pdf",
+     "urn": 136994
+    },
+    {
+     "applications": null,
+     "entry_point": "national_offer_day",
+     "entry_year": 2025,
+     "first_prefs": null,
+     "last_distance_miles": 3.75,
+     "last_priority": "Sibling (Out of Catchment)",
+     "note": null,
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/How-secondary-places-were-offered-24-25-26.pdf",
+     "urn": 136994
+    },
+    {
+     "applications": null,
+     "entry_point": "catchment_map",
+     "entry_year": 2025,
+     "first_prefs": null,
+     "last_distance_miles": 0.405,
+     "last_priority": "Priority 6 Distance",
+     "note": "Catchment map panel; point in the admissions cycle not stated. Matches user seed value",
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2025-09/Alderbrook-School-Catchment-Map.pdf",
+     "urn": 136994
+    },
+    {
+     "applications": null,
+     "entry_point": "national_offer_day",
+     "entry_year": 2024,
+     "first_prefs": null,
+     "last_distance_miles": 0.54,
+     "last_priority": "Distance",
+     "note": null,
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/How-secondary-places-were-offered-24-25-26.pdf",
+     "urn": 136994
+    },
+    {
+     "applications": null,
+     "entry_point": "catchment_map",
+     "entry_year": 2024,
+     "first_prefs": null,
+     "last_distance_miles": 0.546,
+     "last_priority": "Priority 5 Distance",
+     "note": "Catchment map panel; point in the admissions cycle not stated. Matches user seed value",
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2025-09/Alderbrook-School-Catchment-Map.pdf",
+     "urn": 136994
+    },
+    {
+     "applications": null,
+     "entry_point": "catchment_map",
+     "entry_year": 2023,
+     "first_prefs": null,
+     "last_distance_miles": 1.745,
+     "last_priority": "Criteria 3 Sibling",
+     "note": "Catchment map panel; point in the admissions cycle not stated. Matches user seed value",
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2025-09/Alderbrook-School-Catchment-Map.pdf",
+     "urn": 136994
+    }
+   ],
+   "name": "Alderbrook School",
+   "ofsted": {
+    "legacy_behaviour": null,
+    "legacy_inspection_date": null,
+    "legacy_leadership": null,
+    "legacy_overall_effectiveness": null,
+    "legacy_personal_development": null,
+    "legacy_quality_of_education": null,
+    "rc_achievement": null,
+    "rc_attendance_behaviour": null,
+    "rc_curriculum_teaching": null,
+    "rc_early_years": null,
+    "rc_inclusion": null,
+    "rc_leadership": null,
+    "rc_personal_development": null,
+    "rc_post16": null,
+    "rc_safeguarding": null,
+    "report_card_date": null,
+    "source_file": "Management_information_-_state-funded_schools_-_latest_inspections_as_at_31_August_2026.csv",
+    "ungraded_date": "2023-04-26",
+    "ungraded_outcome": "School remains Good",
+    "urn": 136994
+   },
+   "performance": {},
+   "rules": {
+    "categories": [
+     {
+      "label": "Looked after and previously looked after children",
+      "priority": 1
+     },
+     {
+      "label": "Exceptional social or medical need",
+      "priority": 2
+     },
+     {
+      "label": "Children of staff recruited to a skill-shortage post",
+      "priority": 3
+     },
+     {
+      "label": "Children living in the catchment",
+      "priority": 4
+     },
+     {
+      "label": "Children with a sibling in years 7 to 10 (out of catchment)",
+      "priority": 5
+     },
+     {
+      "label": "Children living closest to the school (distance)",
+      "priority": 6
+     }
+    ],
+    "pan": 280,
+    "policy_year": "2027/28",
+    "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/Alderbrook-School-2027-28.pdf",
+    "tie_break": "Straight-line distance from the home to the school, closest first."
+   },
+   "urn": 136994
+  },
+  "st_james": {
+   "gate_verified": false,
+   "name": "Tudor Grange Primary Academy St James",
+   "ofsted": {
+    "legacy_behaviour": null,
+    "legacy_inspection_date": null,
+    "legacy_leadership": null,
+    "legacy_overall_effectiveness": null,
+    "legacy_personal_development": null,
+    "legacy_quality_of_education": null,
+    "rc_achievement": null,
+    "rc_attendance_behaviour": null,
+    "rc_curriculum_teaching": null,
+    "rc_early_years": null,
+    "rc_inclusion": null,
+    "rc_leadership": null,
+    "rc_personal_development": null,
+    "rc_post16": null,
+    "rc_safeguarding": null,
+    "report_card_date": null,
+    "source_file": "Management_information_-_state-funded_schools_-_latest_inspections_as_at_31_August_2026.csv",
+    "ungraded_date": "2024-03-06",
+    "ungraded_outcome": "School remains Outstanding (Concerns) - S5 Next",
+    "urn": 139007
+   },
+   "performance": {},
+   "urn": 139007
+  },
+  "tga": {
+   "gate_verified": false,
+   "history": [
+    {
+     "applications": null,
+     "entry_point": "national_offer_day",
+     "entry_year": 2026,
+     "first_prefs": null,
+     "last_distance_miles": 0.8,
+     "last_priority": "Distance",
+     "note": null,
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/How-secondary-places-were-offered-24-25-26.pdf",
+     "urn": 136310
+    },
+    {
+     "applications": null,
+     "entry_point": "national_offer_day",
+     "entry_year": 2025,
+     "first_prefs": null,
+     "last_distance_miles": 0.14,
+     "last_priority": "Distance",
+     "note": null,
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/How-secondary-places-were-offered-24-25-26.pdf",
+     "urn": 136310
+    },
+    {
+     "applications": null,
+     "entry_point": "catchment_map",
+     "entry_year": 2025,
+     "first_prefs": null,
+     "last_distance_miles": 0.315,
+     "last_priority": "Priority 7 Distance",
+     "note": "Catchment map panel; point in the admissions cycle not stated",
+     "pan": null,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2025-09/TGAS-Catchment-Map.pdf",
+     "urn": 136310
+    },
+    {
+     "applications": null,
+     "entry_point": "national_offer_day",
+     "entry_year": 2024,
+     "first_prefs": null,
+     "last_distance_miles": 2.42,
+     "last_priority": "Catchment (without sibling)",
+     "note": null,
+     "pan": 280,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/How-secondary-places-were-offered-24-25-26.pdf",
+     "urn": 136310
+    },
+    {
+     "applications": null,
+     "entry_point": "catchment_map",
+     "entry_year": 2024,
+     "first_prefs": null,
+     "last_distance_miles": 2.42,
+     "last_priority": "Priority 5 Catchment Area",
+     "note": "Catchment map panel; point in the admissions cycle not stated",
+     "pan": null,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2025-09/TGAS-Catchment-Map.pdf",
+     "urn": 136310
+    },
+    {
+     "applications": null,
+     "entry_point": "catchment_map",
+     "entry_year": 2023,
+     "first_prefs": null,
+     "last_distance_miles": 2.278,
+     "last_priority": "Criteria 3 Catchment Area",
+     "note": "Catchment map panel; point in the admissions cycle not stated",
+     "pan": null,
+     "source_url": "https://www.solihull.gov.uk/sites/default/files/2025-09/TGAS-Catchment-Map.pdf",
+     "urn": 136310
+    }
+   ],
+   "name": "Tudor Grange Academy Solihull",
+   "ofsted": {
+    "legacy_behaviour": "1",
+    "legacy_inspection_date": "2025-04-29",
+    "legacy_leadership": "1",
+    "legacy_overall_effectiveness": "Not judged",
+    "legacy_personal_development": "1",
+    "legacy_quality_of_education": "1",
+    "rc_achievement": null,
+    "rc_attendance_behaviour": null,
+    "rc_curriculum_teaching": null,
+    "rc_early_years": null,
+    "rc_inclusion": null,
+    "rc_leadership": null,
+    "rc_personal_development": null,
+    "rc_post16": null,
+    "rc_safeguarding": null,
+    "report_card_date": null,
+    "source_file": "Management_information_-_state-funded_schools_-_latest_inspections_as_at_31_August_2026.csv",
+    "ungraded_date": null,
+    "ungraded_outcome": null,
+    "urn": 136310
+   },
+   "performance": {},
+   "rules": {
+    "categories": [
+     {
+      "label": "Looked after and previously looked after children",
+      "priority": 1
+     },
+     {
+      "label": "Exceptional medical and/or social need",
+      "priority": 2
+     },
+     {
+      "label": "Pupils of Tudor Grange Primary Academy St James",
+      "priority": 3
+     },
+     {
+      "label": "Pupils of Tudor Grange Primary Academy Hockley Heath living in the TGA catchment",
+      "priority": 4
+     },
+     {
+      "label": "Children of staff recruited to a skill-shortage post",
+      "priority": 5
+     },
+     {
+      "label": "Other children living in the catchment (siblings first, then distance)",
+      "priority": 6
+     },
+     {
+      "label": "All other children (distance)",
+      "priority": 7
+     }
+    ],
+    "pan": 280,
+    "policy_year": "2027/28",
+    "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/TGA-Solihull-2027-28.pdf",
+    "tie_break": "Straight-line distance from the home LLPG grid point to the main pedestrian gate, closest first. Random lottery for equal distances."
+   },
+   "urn": 136310
+  }
+ },
+ "scoring": {
+  "budget_gbp": 550000,
+  "not_in_catchment_cap": 40,
+  "over_budget_multiplier": 0.25,
+  "weights": {
+   "community": 15,
+   "price": 25,
+   "safety": 20,
+   "school": 40
+  }
+ },
+ "sources": [
+  {
+   "fetched_at": "2026-10-03T17:03:49+00:00",
+   "licence": "Solihull Metropolitan Borough Council published admissions information",
+   "rows": 59,
+   "source": "admissions",
+   "status": "ok_with_warnings",
+   "url": "https://www.solihull.gov.uk/sites/default/files/2026-02/How-secondary-places-were-offered-24-25-26.pdf"
+  },
+  {
+   "fetched_at": "2026-10-03T17:03:41+00:00",
+   "licence": "Solihull Metropolitan Borough Council online maps. Used locally for personal reference only; boundaries are not republished.",
+   "rows": 5035,
+   "source": "catchments",
+   "status": "ok",
+   "url": "https://services.arcgis.com/L4gSWjgFt7RclHud/arcgis/rest/services/SecondaryCatchments/FeatureServer/0"
+  },
+  {
+   "fetched_at": "2026-10-03T17:04:28+00:00",
+   "licence": "Office for National Statistics, Census 2021 via Nomis. Open Government Licence v3.0",
+   "rows": 31962,
+   "source": "census",
+   "status": "ok",
+   "url": "https://www.nomisweb.co.uk/api/v01/dataset/NM_2021_1"
+  },
+  {
+   "fetched_at": null,
+   "licence": "Open Government Licence v3.0 for EPC data; address fields are subject to Royal Mail and Ordnance Survey rights (see the service licensing guidance). Used for local matching only, addresses are not published.",
+   "rows": null,
+   "source": "epc",
+   "status": "skipped_manual_input_needed",
+   "url": null
+  },
+  {
+   "fetched_at": null,
+   "licence": "Seed from Solihull Council online maps; verified by hand",
+   "rows": 3,
+   "source": "gates",
+   "status": "ok_with_warnings",
+   "url": "data/seed/school_gates.csv"
+  },
+  {
+   "fetched_at": "2026-10-03T17:03:47+00:00",
+   "licence": "Open Government Licence v3.0",
+   "rows": 432,
+   "source": "gias",
+   "status": "ok",
+   "url": "https://get-information-schools.service.gov.uk/Downloads (All establishment data)"
+  },
+  {
+   "fetched_at": "2026-10-03T17:04:29+00:00",
+   "licence": "Ministry of Housing, Communities and Local Government. Open Government Licence v3.0",
+   "rows": 359,
+   "source": "imd",
+   "status": "ok",
+   "url": "https://assets.publishing.service.gov.uk/media/691ded56d140bbbaa59a2a7d/File_7_IoD2025_All_Ranks_Scores_Deciles_Population_Denominators.csv"
+  },
+  {
+   "fetched_at": "2026-10-03T17:04:30+00:00",
+   "licence": "Source: Office for National Statistics licensed under the Open Government Licence v3.0. Contains OS data (c) Crown copyright and database right",
+   "rows": 139,
+   "source": "lsoa_boundaries",
+   "status": "ok",
+   "url": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Lower_layer_Super_Output_Areas_December_2021_Boundaries_EW_BGC_V5/FeatureServer/0"
+  },
+  {
+   "fetched_at": "2026-10-03T17:03:48+00:00",
+   "licence": "Open Government Licence v3.0",
+   "rows": 372,
+   "source": "ofsted",
+   "status": "ok_with_warnings",
+   "url": "https://assets.publishing.service.gov.uk/media/6aa0175392e72b8ac437ef37/Management_information_-_state-funded_schools_-_latest_inspections_as_at_31_August_2026.csv"
+  },
+  {
+   "fetched_at": "2026-10-03T17:03:39+00:00",
+   "licence": "Open Government Licence v3.0 (contains OS data and Royal Mail data, see ons.gov.uk/methodology/geography/licences)",
+   "rows": 2277,
+   "source": "onspd",
+   "status": "ok",
+   "url": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/ONS_Postcode_Directory_(August_2026)_(Hosted_Table)/FeatureServer/0"
+  },
+  {
+   "fetched_at": "2026-10-03T17:05:16+00:00",
+   "licence": "(c) OpenStreetMap contributors, Open Database Licence (ODbL) 1.0",
+   "rows": 203,
+   "source": "osm",
+   "status": "ok",
+   "url": "https://overpass-api.de/api/interpreter"
+  },
+  {
+   "fetched_at": null,
+   "licence": "Open Government Licence v3.0",
+   "rows": null,
+   "source": "performance",
+   "status": "skipped_manual_input_needed",
+   "url": "https://www.compare-school-performance.service.gov.uk/download-data"
+  },
+  {
+   "fetched_at": "2026-10-03T17:05:08+00:00",
+   "licence": "data.police.uk, Open Government Licence v3.0",
+   "rows": 19913,
+   "source": "police",
+   "status": "ok",
+   "url": "https://data.police.uk/api/crimes-street/all-crime"
+  },
+  {
+   "fetched_at": "2026-10-03T17:04:14+00:00",
+   "licence": "Contains HM Land Registry data (c) Crown copyright and database right. Licensed under the Open Government Licence v3.0. Address data: Royal Mail and Ordnance Survey permit personal/non-commercial display only.",
+   "rows": 10443,
+   "source": "ppd",
+   "status": "ok_with_warnings",
+   "url": "https://price-paid-data.publicdata.landregistry.gov.uk/pp-2026.csv"
+  }
+ ]
+}

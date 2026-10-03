@@ -1,0 +1,15 @@
+{
+  "description": "Shared by tests/python/test_score.py and tests/area-pack.test.mjs so the Python and browser formulas cannot drift.",
+  "cases": [
+    {"subs": {"school": 70, "price": 60, "safety": 40, "community": 80}, "weights": {"school": 40, "price": 25, "safety": 20, "community": 15}, "expected": 63.0},
+    {"subs": {"school": 70, "price": 60, "safety": 40, "community": 80}, "weights": {"school": 100, "price": 0, "safety": 0, "community": 0}, "expected": 70.0},
+    {"subs": {"school": 70, "price": null, "safety": 40, "community": 80}, "weights": {"school": 40, "price": 25, "safety": 20, "community": 15}, "expected": 64.0},
+    {"subs": {"school": null, "price": null, "safety": null, "community": null}, "weights": {"school": 40, "price": 25, "safety": 20, "community": 15}, "expected": null}
+  ],
+  "budget_cases": [
+    {"raw": 80, "budget_value": 600000, "budget": 550000, "multiplier": 0.25, "expected": 20.0},
+    {"raw": 80, "budget_value": 500000, "budget": 550000, "multiplier": 0.25, "expected": 80.0},
+    {"raw": 80, "budget_value": null, "budget": 550000, "multiplier": 0.25, "expected": 80.0},
+    {"raw": null, "budget_value": 600000, "budget": 550000, "multiplier": 0.25, "expected": null}
+  ]
+}

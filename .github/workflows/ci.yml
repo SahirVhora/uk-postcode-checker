@@ -54,3 +54,30 @@ jobs:
           find . -type f -not -path "./.git/*" -not -path "./node_modules/*" -size +5M | while read file; do
             echo "Warning: Large file detected: $file ($(du -h "$file" | cut -f1))"
           done
+
+  test:
+    # Unit tests only. The network pipeline (python -m pipeline.run) never runs in CI.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Front-end tests (node:test, runner's preinstalled Node)
+        run: node --test tests/*.test.mjs
+
+      - name: Install pipeline test dependencies
+        run: |
+          python3 -m venv .venv
+          .venv/bin/python -m pip install --quiet -r requirements-dev.txt
+
+      - name: Pipeline tests (pytest, no network)
+        run: .venv/bin/python -m pytest
+
+      - name: Area Pack has no polygons or house-level addresses
+        run: python3 -m pipeline.packcheck
+
+      - name: No em dashes in tracked text files
+        run: |
+          if git grep -nIP '\x{2014}' -- . ; then
+            echo "Em dashes found (use a hyphen instead)"; exit 1
+          fi

@@ -1,0 +1,24 @@
+{
+  "school_key": "alderbrook",
+  "urn": 136994,
+  "school_name": "Alderbrook School",
+  "policy_year": "2027/28",
+  "source_url": "https://www.solihull.gov.uk/sites/default/files/2026-02/Alderbrook-School-2027-28.pdf",
+  "pan": 280,
+  "tie_break": "Straight-line distance from the home to the school, closest first.",
+  "categories": [
+    {"priority": 1, "code": "lac", "label": "Looked after and previously looked after children", "requires": {"lac": true}},
+    {"priority": 2, "code": "medical_social", "label": "Exceptional social or medical need", "requires": {"medical_social": true}},
+    {"priority": 3, "code": "staff_skill_shortage", "label": "Children of staff recruited to a skill-shortage post", "requires": {"staff": true}},
+    {"priority": 4, "code": "catchment", "label": "Children living in the catchment", "requires": {"in_catchment": true}},
+    {"priority": 5, "code": "sibling", "label": "Children with a sibling in years 7 to 10 (out of catchment)", "requires": {"sibling": true}},
+    {"priority": 6, "code": "other", "label": "Children living closest to the school (distance)", "requires": {}}
+  ],
+  "history_label_aliases": [
+    {"match": "all on time applicants offered", "outcome": "all_offered"},
+    {"match": "sibling", "priority": 5},
+    {"match": "catchment", "priority": 4},
+    {"match": "distance", "priority": 6}
+  ],
+  "notes": "History labels are matched by text in list order (first match wins), not by the priority number printed on older documents, because numbering changed between policy years. 'Sibling (Out of Catchment)' must match sibling before catchment."
+}
