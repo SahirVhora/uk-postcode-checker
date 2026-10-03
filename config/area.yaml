@@ -1,0 +1,62 @@
+# Area Pack configuration. Change outcodes and schools here to run the
+# pipeline for a different area. Nothing in this file is a dataset ID or a
+# download URL: those are discovered at runtime from official landing pages.
+
+name: Shirley and Solihull
+outcodes: [B90, B91, B94]
+
+# Optional: force the borough used for "borough median" comparisons.
+# Leave empty to use the local authority that contains most pool postcodes.
+borough_lad: ""
+
+# Secondary schools whose catchments define in_target_catchment.
+# urn is the DfE Unique Reference Number (checked against GIAS on each run).
+# catchment_name must match the CONAME attribute in the council catchment layer.
+target_schools:
+  - key: tga
+    urn: 136310
+    name: Tudor Grange Academy Solihull
+    catchment_name: Tudor Grange Academy Solihull
+    rules: config/admissions_rules/tga-solihull-2027-28.json
+  - key: alderbrook
+    urn: 136994
+    name: Alderbrook School
+    catchment_name: Alderbrook School
+    rules: config/admissions_rules/alderbrook-2027-28.json
+
+# Primary schools that act as feeders in the rules above.
+feeder_schools:
+  - key: st_james
+    urn: 139007
+    name: Tudor Grange Primary Academy St James
+
+catchments:
+  landing_page: https://www.solihull.gov.uk/onlinemaps
+  secondary_layer_title: Secondary School Catchment Areas
+  primary_layer_title: Primary School Catchment Areas
+  school_name_field: CONAME
+
+admissions:
+  # Council pages that link to admissions evidence. PDFs are discovered from
+  # these pages by link text / file name pattern, never hardcoded.
+  pages:
+    - https://www.solihull.gov.uk/schools-and-learning/starting-primary-or-secondary-school
+    - https://www.solihull.gov.uk/schools-and-learning/infant-and-primary-schools/secondary-schools
+  history_years: 3
+
+schools:
+  radius_miles: 5
+  performance_years: 3
+
+prices:
+  ppd_years: 6
+  recent_months: 24
+  flag_band_gbp: [450000, 600000]
+
+crime:
+  months: 12
+  # Categories counted in the "family relevant" rate.
+  family_categories: [burglary, vehicle-crime, violent-crime, robbery]
+
+osm:
+  radius_miles: 5

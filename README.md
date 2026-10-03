@@ -60,6 +60,64 @@ To enable school star ratings:
 | [Environment Agency](https://environment.data.gov.uk/flood-monitoring/doc/reference) | Flood risk areas | Open Government Licence |
 | [Chart.js](https://cdnjs.cloudflare.com) | Canvas charts | MIT |
 
+## Area Pack (Shirley / Solihull)
+
+A permanent local area-intelligence database built only from official open data, so a house search needs no paid service. It covers every live postcode in B90, B91 and B94 (configurable in `config/area.yaml`) and adds:
+
+* **Three extra cards** in `index.html` for postcodes in the pack: secondary admissions (Tudor Grange Academy Solihull and Alderbrook catchments, gate distances, likely admission category, offer history), sold prices (Land Registry, plus EPC floor areas when loaded), and an area score with breakdown bars, weight sliders and a budget box. Any other postcode behaves exactly as before.
+* **[shortlist.html](shortlist.html)**: every postcode ranked by score, with filters (catchment, budget, minimum score, outcode), a Leaflet map of postcode centres coloured by score, and CSV export.
+* **A text report**: `python -m pipeline.report "B90 3DF"`.
+
+Only derived per-postcode values are published in `data/area-pack/`. Catchment polygons, LSOA boundaries, the master database and raw downloads stay on your machine (`data/local/`, `pipeline/cache/`, both gitignored), and house numbers are never published.
+
+### Setup
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+cp .env.example .env        # optional: add EPC_API_TOKEN (see docs/MANUAL_CHECKS.md)
+```
+
+### Commands
+
+| Command | What it does |
+|---|---|
+| `python -m pipeline.run --sources all` | Fetch every source (using the cache where present), load `data/local/area.db`, compute distances, metrics and scores |
+| `python -m pipeline.run --sources ppd,police --refresh` | Re-download the named sources, ignoring the cache |
+| `python -m pipeline.run --offline` | Rebuild the database from `pipeline/cache/` only, no network |
+| `python -m pipeline.derive` | Recompute distances, metrics and scores after editing `config/scoring.yaml` |
+| `python -m pipeline.export` | Write the public pack to `data/area-pack/` (refuses to write polygons) |
+| `python -m pipeline.report "B90 3DF"` | One-page text profile |
+| `python -m pipeline.validate` | Row counts, null rates, PPD to EPC match rate, five spot-check postcodes |
+
+Sources: `onspd, catchments, gias, ofsted, performance, gates, admissions, ppd, epc, census, imd, lsoa_boundaries, police, osm`. A source that cannot run without your input (KS2/KS4 downloads, EPC token) is reported as `skipped_manual_input_needed` with instructions; everything else still builds.
+
+To view the pages locally, serve the folder (browsers block `fetch` from `file://`):
+
+```bash
+python -m http.server 8000   # then open http://localhost:8000/ and /shortlist.html
+```
+
+### Monthly refresh
+
+```bash
+python -m pipeline.run --sources all --refresh
+python -m pipeline.validate
+python -m pipeline.export
+git add data/area-pack && git commit -m "data: refresh area pack"
+```
+
+### Documentation
+
+* [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md): every source, how it is discovered, licence, refresh cadence, caveats
+* [docs/SCORING.md](docs/SCORING.md): the scoring formula and defaults
+* [docs/MANUAL_CHECKS.md](docs/MANUAL_CHECKS.md): values to verify by hand (gate points, admissions conflicts, test postcodes) and data that needs your input
+
+### Licences and attribution
+
+Area Pack data: Contains HM Land Registry data (c) Crown copyright and database right, licensed under the Open Government Licence v3.0. Contains public sector information licensed under the Open Government Licence v3.0 (ONS, DfE, Ofsted, MHCLG, data.police.uk). Contains OS data (c) Crown copyright and database right, and Royal Mail data (c) Royal Mail copyright and database right. Map data (c) OpenStreetMap contributors, Open Database Licence. Catchment flags are derived from Solihull Council online maps; boundaries are not republished.
+
 ## 🔗 Also in the UK Property Toolkit
 
 - **[UK-HomeFinder](https://github.com/SahirVhora/UK-HomeFinder)** - Property comparison tracker, SDLT calculator, readiness checklist, Rightmove/Zoopla URL parser

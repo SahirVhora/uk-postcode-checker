@@ -1,0 +1,7 @@
+# Area Pack pipeline (Python 3.11+). Install: python -m pip install -r requirements.txt
+requests==2.34.2
+shapely==2.1.2
+pyproj==3.7.2
+PyYAML==6.0.3
+python-dotenv==1.2.4
+pdfplumber==0.11.10

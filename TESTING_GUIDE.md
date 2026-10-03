@@ -37,6 +37,21 @@ The following improvements have been applied to `index.html`:
 
 ---
 
+## 🤖 AUTOMATED TESTS
+
+Run before every commit (CI runs the same, without the network pipeline):
+
+```bash
+node --test tests/*.test.mjs          # front-end helpers, Area Pack cards, shortlist
+.venv/bin/python -m pytest            # pipeline parsers, geometry, admissions model, scoring, export
+python3 -m pipeline.packcheck         # published pack has no polygons or house-level addresses
+pre-commit run --all-files            # whitespace, YAML, large files, no em dashes, pack check
+```
+
+Area Pack manual checks: search `B90 3DF` (three extra cards appear above the usual ones) and `SW1A 1AA` (page unchanged, no extra cards), and open `shortlist.html`. Serve with `python -m http.server` first.
+
+---
+
 ## 🧪 HOW TO TEST
 
 ### **Test Environment Setup**

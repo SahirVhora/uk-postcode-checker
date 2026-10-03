@@ -1,0 +1,6 @@
+LSOA code (2021),LSOA name (2021),Local Authority District code (2024),Local Authority District name (2024),Index of Multiple Deprivation (IMD) Score,Index of Multiple Deprivation (IMD) Rank (where 1 is most deprived),Index of Multiple Deprivation (IMD) Decile (where 1 is most deprived 10% of LSOAs),Income Score (rate),Income Rank (where 1 is most deprived),Income Decile (where 1 is most deprived 10% of LSOAs),"Education
+ Skills and Training Score","Education
+ Skills and Training Rank (where 1 is most deprived)","Education
+ Skills and Training Decile (where 1 is most deprived 10% of LSOAs)",Crime Score,Crime Rank (where 1 is most deprived),Crime Decile (where 1 is most deprived 10% of LSOAs),Living Environment Score,Living Environment Rank (where 1 is most deprived),Living Environment Decile (where 1 is most deprived 10% of LSOAs)
+E01010203,Solihull 022C,E08000029,Solihull,10.726,24120,8,0.16,19093,6,7.655,25191,8,-0.048,17496,6,22.376,13661,5
+E09999999,Elsewhere 001A,E06000001,Elsewhere,40.1,100,1,0.4,90,1,50.1,80,1,1.5,70,1,40.0,60,1

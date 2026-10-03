@@ -1,0 +1,116 @@
+{
+ "metrics": {
+  "ALL": {
+   "median_4bed_equiv": null,
+   "median_gbp_per_sqm": null,
+   "median_price_recent": 365000,
+   "sales_4bed_equiv": 0,
+   "sales_recent": 295,
+   "trend_pct": -2.9
+  },
+  "D": {
+   "median_4bed_equiv": null,
+   "median_gbp_per_sqm": null,
+   "median_price_recent": 536000,
+   "sales_4bed_equiv": 0,
+   "sales_recent": 53,
+   "trend_pct": -0.6
+  },
+  "F": {
+   "median_4bed_equiv": null,
+   "median_gbp_per_sqm": null,
+   "median_price_recent": 180000,
+   "sales_4bed_equiv": 0,
+   "sales_recent": 50,
+   "trend_pct": 0.0
+  },
+  "H": {
+   "median_4bed_equiv": null,
+   "median_gbp_per_sqm": null,
+   "median_price_recent": 390000,
+   "sales_4bed_equiv": 0,
+   "sales_recent": 245,
+   "trend_pct": -2.7
+  },
+  "S": {
+   "median_4bed_equiv": null,
+   "median_gbp_per_sqm": null,
+   "median_price_recent": 380000,
+   "sales_4bed_equiv": 0,
+   "sales_recent": 130,
+   "trend_pct": 0.0
+  },
+  "T": {
+   "median_4bed_equiv": null,
+   "median_gbp_per_sqm": null,
+   "median_price_recent": 327500,
+   "sales_4bed_equiv": 0,
+   "sales_recent": 62,
+   "trend_pct": 6.2
+  }
+ },
+ "recent_sales": [
+  {
+   "date": "2026-08-07",
+   "floor_area": null,
+   "locality": "SHIRLEY",
+   "new_build": false,
+   "postcode": "B90 3HT",
+   "price": 542500,
+   "rooms_band": null,
+   "street": "WELFORD ROAD",
+   "tenure": "F",
+   "type": "S"
+  },
+  {
+   "date": "2026-07-28",
+   "floor_area": null,
+   "locality": "SHIRLEY",
+   "new_build": false,
+   "postcode": "B90 3NR",
+   "price": 650000,
+   "rooms_band": null,
+   "street": "NORTHBROOK ROAD",
+   "tenure": "F",
+   "type": "D"
+  },
+  {
+   "date": "2026-07-24",
+   "floor_area": null,
+   "locality": "SHIRLEY",
+   "new_build": false,
+   "postcode": "B90 3EF",
+   "price": 345000,
+   "rooms_band": null,
+   "street": "LONGMORE ROAD",
+   "tenure": "F",
+   "type": "T"
+  },
+  {
+   "date": "2026-07-23",
+   "floor_area": null,
+   "locality": "SHIRLEY",
+   "new_build": false,
+   "postcode": "B90 3RB",
+   "price": 435000,
+   "rooms_band": null,
+   "street": "MANCETTER ROAD",
+   "tenure": "F",
+   "type": "T"
+  },
+  {
+   "date": "2026-07-23",
+   "floor_area": null,
+   "locality": "SHIRLEY",
+   "new_build": false,
+   "postcode": "B90 3SW",
+   "price": 640000,
+   "rooms_band": null,
+   "street": "STOCKLEY CRESCENT",
+   "tenure": "F",
+   "type": "D"
+  }
+ ],
+ "recent_sales_months": 36,
+ "sector": "B90 3"
+}

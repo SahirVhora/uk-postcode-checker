@@ -154,6 +154,45 @@
     }
     .planning-more:hover { background: #f2f7ff; }
     .planning-more[hidden] { display: none; }
+
+    /* ── Area Pack cards (only shown for postcodes in data/area-pack) ── */
+    .card[hidden] { display: none; }
+    /* Let grid cards shrink on phones so wide tables scroll inside their wrapper instead of widening the page. */
+    #results > .card { min-width: 0; }
+    #card-admissions, #card-prices, #card-score { overflow-wrap: anywhere; }
+    .area-asof { font-size: 0.72rem; color: #8fa8c0; margin: -0.6rem 0 0.9rem; }
+    .area-school { border-top: 1px solid #f0f2f5; padding-top: 0.8rem; margin-top: 0.8rem; }
+    .area-school:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+    .area-school h3 { font-size: 0.92rem; margin-bottom: 0.4rem; }
+    .area-badge {
+      display: inline-block; padding: 0.12rem 0.5rem; border-radius: 999px; font-size: 0.72rem;
+      font-weight: 700; margin-right: 0.3rem; white-space: nowrap;
+    }
+    .area-badge.yes { background: #e3f4ea; color: #1e6b3a; }
+    .area-badge.no { background: #edf2f7; color: #4a5568; }
+    .area-badge.warn { background: #fdf0e6; color: #9a4a12; }
+    .area-line { font-size: 0.82rem; margin: 0.25rem 0; line-height: 1.4; }
+    .area-line small { color: #777; }
+    .area-note { font-size: 0.72rem; color: #777; margin-top: 0.7rem; line-height: 1.4; }
+    .area-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; margin-bottom: 0.9rem; }
+    .area-stat label { font-size: 0.68rem; text-transform: uppercase; color: #8fa8c0; display: block; }
+    .area-stat span { font-size: 1.05rem; font-weight: 700; }
+    .area-flag td:first-child::before { content: "★ "; color: #e76f51; }
+    .score-row { display: grid; grid-template-columns: 110px 1fr 48px; gap: 0.6rem; align-items: center; margin: 0.45rem 0; }
+    .score-row label { font-size: 0.8rem; font-weight: 600; }
+    .score-bar { height: 12px; background: #edf2f7; border-radius: 999px; overflow: hidden; }
+    .score-bar span { display: block; height: 100%; background: #0173B2; border-radius: 999px; }
+    .score-value { font-size: 0.85rem; font-weight: 700; text-align: right; }
+    .score-total { font-size: 2rem; font-weight: 800; color: #0d1b2a; }
+    .score-parts { font-size: 0.72rem; color: #777; margin: -0.2rem 0 0.4rem 118px; line-height: 1.35; }
+    .score-weights { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 0.4rem 1.2rem; margin-top: 1rem; }
+    .score-weights label { font-size: 0.78rem; display: flex; justify-content: space-between; gap: 0.5rem; }
+    .score-weights input[type=range] { width: 100%; }
+    .score-weights input[type=number] { width: 7.5rem; border: 1px solid #cbd5e0; border-radius: 6px; padding: 0.3rem 0.4rem; font: inherit; }
+    @media (max-width: 480px) {
+      .score-row { grid-template-columns: 80px 1fr 40px; }
+      .score-parts { margin-left: 0; }
+    }
   </style>
 </head>
 <body>
@@ -175,6 +214,9 @@
 </header>
 
 <div id="results">
+  <section class="card" id="card-admissions" hidden aria-labelledby="card-admissions-title"><h2 id="card-admissions-title">🎓 Secondary admissions (TGA / Alderbrook)</h2></section>
+  <section class="card" id="card-prices" hidden aria-labelledby="card-prices-title"><h2 id="card-prices-title">💷 Sold prices (Land Registry + EPC)</h2></section>
+  <section class="card span-full" id="card-score" hidden aria-labelledby="card-score-title"><h2 id="card-score-title">⭐ Area score</h2></section>
   <div class="card" id="card-location"><h2>📍 Location</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
   <div class="card" id="card-crime"><h2>🚔 Crime</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
   <div class="card" id="card-ethnicity"><h2>👥 Ethnicity</h2><div class="loading-wrap"><div class="spinner"></div></div></div>
@@ -193,6 +235,7 @@
   <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> ·
   <a href="https://reports.ofsted.gov.uk" target="_blank">Ofsted</a> ·
   <a href="https://www.planit.org.uk" target="_blank">PlanIt</a>
+  <div id="area-pack-attribution" hidden style="margin-top:0.8rem; line-height:1.5;"></div>
 </footer>
 
 <script>
@@ -490,6 +533,264 @@
   }
 
   // ════════════════════════════════════════════════════════════════
+  // AREA PACK - local open-data pack (data/area-pack) for configured outcodes.
+  // Postcodes outside the pack keep the original behaviour: these cards stay hidden.
+  // ════════════════════════════════════════════════════════════════
+
+  // AREA PACK START
+  const AREA_PACK_BASE = 'data/area-pack/';
+  const AREA_PACK_CARDS = ['card-admissions', 'card-prices', 'card-score'];
+  const AREA_PACK_TIMEOUT_MS = 8000;
+  const AREA_SUBSCORES = ['school', 'price', 'safety', 'community'];
+  const AREA_OUTCOME_TEXT = {
+    all_offered: 'all on-time applicants offered',
+    category_cleared: 'category fully admitted',
+    within_distance: 'within the last distance offered',
+    outside_distance: 'beyond the last distance offered',
+    not_reached: 'category not reached',
+    unknown: 'cannot tell from published data',
+  };
+  const AREA_TYPE_TEXT = { D: 'Detached', S: 'Semi', T: 'Terraced', F: 'Flat', O: 'Other', ALL: 'All types' };
+  let areaPackIndexPromise = null;
+  const areaPackFileCache = new Map();
+
+  /**
+   * Weighted mean of the available sub-scores. Missing sub-scores are re-weighted away, never counted as 0.
+   * Same formula as total_score() in pipeline/score.py (tests/fixtures/score_parity.json checks both).
+   */
+  function areaTotalScore(subs, weights) {
+    let num = 0, den = 0;
+    AREA_SUBSCORES.forEach(key => {
+      const value = subs[key];
+      const weight = Number(weights[key]) || 0;
+      if (value !== null && value !== undefined && weight) { num += weight * value; den += weight; }
+    });
+    return den ? Math.round((num / den) * 100) / 100 : null;
+  }
+
+  /** Hard budget penalty, same as price_with_budget() in pipeline/score.py. */
+  function areaPriceWithBudget(raw, budgetValue, budget, multiplier) {
+    if (raw === null || raw === undefined) return null;
+    if (budgetValue !== null && budgetValue !== undefined && budgetValue > budget) return Math.round(raw * multiplier * 100) / 100;
+    return raw;
+  }
+
+  const areaGbp = v => (v === null || v === undefined) ? 'n/a' : `£${Math.round(v).toLocaleString('en-GB')}`;
+  const areaMiles = v => (v === null || v === undefined) ? 'n/a' : `${Number(v).toFixed(2)} mi`;
+  const areaPct = v => (v === null || v === undefined) ? 'n/a' : `${Number(v).toFixed(1)}%`;
+  const areaNum = (v, digits = 1) => (v === null || v === undefined) ? 'n/a' : Number(v).toFixed(digits);
+  const areaDate = iso => iso ? formatPlanningDate(String(iso).slice(0, 10)) : 'not loaded';
+
+  /** Date a source was fetched, from index.json sources. */
+  function areaAsOf(index, source) {
+    const run = (index.sources || []).find(s => s.source === source);
+    return run && run.rows ? areaDate(run.fetched_at) : 'not loaded';
+  }
+
+  function hideAreaPackCards() {
+    AREA_PACK_CARDS.forEach(id => { document.getElementById(id).hidden = true; });
+    const attribution = document.getElementById('area-pack-attribution');
+    if (attribution) attribution.hidden = true;
+  }
+
+  function loadAreaPackJson(path) {
+    if (!areaPackFileCache.has(path)) {
+      const promise = fetchWithTimeout(AREA_PACK_BASE + path, {}, AREA_PACK_TIMEOUT_MS)
+        .then(res => (res.ok ? res.json() : null))
+        .catch(() => null)
+        .then(data => { if (!data) areaPackFileCache.delete(path); return data; });
+      areaPackFileCache.set(path, promise);
+    }
+    return areaPackFileCache.get(path);
+  }
+
+  function loadAreaPackIndex() {
+    if (!areaPackIndexPromise) {
+      areaPackIndexPromise = loadAreaPackJson('index.json').then(data => {
+        if (!data) areaPackIndexPromise = null;
+        return data;
+      });
+    }
+    return areaPackIndexPromise;
+  }
+
+  function areaHistoryRow(school, year) {
+    const rows = (school.history || []).filter(h => h.entry_year === year);
+    return rows.find(h => h.entry_point === 'national_offer_day') || rows[0] || null;
+  }
+
+  function areaAssessmentHtml(label, assessment, school, index) {
+    const category = (school.rules.categories || []).find(c => c.priority === assessment.priority);
+    const indicator = (index.indicator_labels || {})[assessment.indicator] || assessment.indicator;
+    const years = (assessment.outcomes || []).map(([year, outcome]) => {
+      const row = areaHistoryRow(school, year);
+      const last = row ? `last offer ${escapeHtml(row.last_priority)}${row.last_distance_miles !== null ? ` ${areaMiles(row.last_distance_miles)}` : ''}` : '';
+      return `${year}: ${escapeHtml(AREA_OUTCOME_TEXT[outcome] || outcome)}${last ? ` <small>(${last})</small>` : ''}`;
+    }).join('<br>');
+    const badge = assessment.safe ? 'yes' : (assessment.indicator === 'none' ? 'no' : 'warn');
+    return `<p class="area-line"><strong>${escapeHtml(label)}:</strong> priority ${assessment.priority}${category ? ` (${escapeHtml(category.label)})` : ''}
+      <span class="area-badge ${badge}">${escapeHtml(indicator)}</span></p>
+      <p class="area-line"><small>${years || 'No published history'}</small></p>`;
+  }
+
+  function areaOfstedHtml(ofsted) {
+    if (!ofsted) return 'No Ofsted record in the latest management information';
+    const parts = [];
+    if (ofsted.report_card_date) {
+      const areas = [['Safeguarding', ofsted.rc_safeguarding], ['Inclusion', ofsted.rc_inclusion],
+        ['Curriculum and teaching', ofsted.rc_curriculum_teaching], ['Achievement', ofsted.rc_achievement],
+        ['Attendance and behaviour', ofsted.rc_attendance_behaviour], ['Personal development', ofsted.rc_personal_development],
+        ['Leadership', ofsted.rc_leadership]].filter(([, v]) => v);
+      parts.push(`Report card (${areaDate(ofsted.report_card_date)}): ${areas.map(([k, v]) => `${k} ${escapeHtml(v)}`).join('; ')}`);
+    }
+    if (ofsted.legacy_inspection_date) {
+      parts.push(`Graded inspection ${areaDate(ofsted.legacy_inspection_date)}: overall ${escapeHtml(ofsted.legacy_overall_effectiveness || 'n/a')}, quality of education ${escapeHtml(ofsted.legacy_quality_of_education || 'n/a')}`);
+    }
+    if (ofsted.ungraded_outcome) parts.push(`Ungraded inspection ${areaDate(ofsted.ungraded_date)}: ${escapeHtml(ofsted.ungraded_outcome)}`);
+    return parts.join('<br>') || 'No published judgement';
+  }
+
+  function areaKs4Html(performance) {
+    const years = Object.keys(performance || {}).sort().reverse();
+    const year = years.find(y => performance[y].KS4);
+    if (!year) return 'KS4 results not imported yet (see docs/MANUAL_CHECKS.md)';
+    const ks4 = performance[year].KS4;
+    const value = metric => ks4[metric] ? ks4[metric].value : null;
+    const p8 = value('P8MEA');
+    return `KS4 ${escapeHtml(year)}: Attainment 8 ${areaNum(value('ATT8SCR'))}, grade 5+ English and maths ${areaPct(value('PTL2BASICS_95'))}, EBacc APS ${areaNum(value('EBACCAPS'), 2)}, Progress 8 ${p8 === null ? 'not published' : areaNum(p8, 2)}`;
+  }
+
+  function areaAdmissionsHtml(pcds, record, index) {
+    const schools = Object.entries(record.schools).map(([key, s]) => {
+      const meta = index.schools[key];
+      const gate = s.gate_verified ? '' : ' <span class="area-badge warn">gate point unverified</span>';
+      return `<div class="area-school">
+        <h3>${escapeHtml(meta.name)} <span class="area-badge ${s.in_catchment ? 'yes' : 'no'}">${s.in_catchment ? 'In catchment' : 'Not in catchment'}</span></h3>
+        <p class="area-line">Distance to main pedestrian gate: <strong>${areaMiles(s.gate_miles)}</strong>${gate}</p>
+        ${areaAssessmentHtml('No sibling, not a feeder pupil', s.default, meta, index)}
+        ${areaAssessmentHtml('Tudor Grange Primary St James pupil', s.st_james, meta, index)}
+        <p class="area-line"><small>${areaOfstedHtml(meta.ofsted)}</small></p>
+        <p class="area-line"><small>${areaKs4Html(meta.performance)}</small></p>
+        <p class="area-line"><small>${escapeHtml(meta.rules.policy_year)} admission policy, PAN ${meta.rules.pan}. <a href="${safeExternalUrl(meta.rules.source_url)}" target="_blank" rel="noopener noreferrer">Policy</a></small></p>
+      </div>`;
+    }).join('');
+    const feeder = record.feeders && record.feeders.st_james;
+    return `<p class="area-asof">Catchments as of ${areaAsOf(index, 'catchments')} · admissions history as of ${areaAsOf(index, 'admissions')} · Ofsted as of ${areaAsOf(index, 'ofsted')}</p>
+      ${schools}
+      ${feeder ? `<p class="area-line">Tudor Grange Primary Academy St James: ${areaMiles(feeder.miles)}</p>` : ''}
+      <p class="area-note">${escapeHtml(index.distance_note)} Indicators compare this postcode with the last place offered on national offer day; they are not a guarantee. Check your exact address at <a href="https://www.solihull.gov.uk/onlinemaps" target="_blank" rel="noopener noreferrer">solihull.gov.uk/onlinemaps</a>.</p>`;
+  }
+
+  function areaPricesHtml(pcds, record, sector, index) {
+    const metrics = record.prices.metrics || {};
+    const all = metrics.ALL || {};
+    const epcRun = (index.sources || []).find(s => s.source === 'epc');
+    const epcLoaded = Boolean(epcRun && epcRun.rows);
+    const band = index.price_flag_band || [450000, 600000];
+    const typeRows = ['D', 'S', 'T', 'F'].filter(t => metrics[t] && metrics[t].sales_recent).map(t => `<tr>
+        <td>${AREA_TYPE_TEXT[t]}</td><td>${metrics[t].sales_recent}</td><td>${areaGbp(metrics[t].median_price_recent)}</td>
+        <td>${metrics[t].median_gbp_per_sqm ? areaGbp(metrics[t].median_gbp_per_sqm) : 'n/a'}</td></tr>`).join('');
+    const sales = (sector && sector.recent_sales) || [];
+    const ordered = sales.filter(s => s.postcode === pcds).concat(sales.filter(s => s.postcode !== pcds)).slice(0, 15);
+    const saleRows = ordered.map(s => `<tr class="${s.price >= band[0] && s.price <= band[1] ? 'area-flag' : ''}">
+        <td>${areaDate(s.date)}</td><td>${areaGbp(s.price)}</td><td>${AREA_TYPE_TEXT[s.type] || escapeHtml(s.type)}${s.new_build ? ' (new)' : ''}</td>
+        <td>${escapeHtml(s.street || '')}, ${escapeHtml(s.postcode)}</td>
+        <td>${s.floor_area ? `${Math.round(s.floor_area)} m²` : ''}${s.rooms_band ? ` · ${escapeHtml(s.rooms_band)} rooms` : ''}</td></tr>`).join('');
+    return `<p class="area-asof">Land Registry as of ${areaAsOf(index, 'ppd')} · EPC ${epcLoaded ? `as of ${areaAsOf(index, 'epc')}` : 'not loaded'} · standard (category A) sales only</p>
+      <div class="area-stats">
+        <div class="area-stat"><label>Median, last 24 months</label><span>${areaGbp(all.median_price_recent)}</span></div>
+        <div class="area-stat"><label>Sales (${escapeHtml(record.prices.level_used)} ${escapeHtml(record.prices.area)})</label><span>${all.sales_recent ?? 'n/a'}</span></div>
+        <div class="area-stat"><label>Median £ per m²</label><span>${all.median_gbp_per_sqm ? areaGbp(all.median_gbp_per_sqm) : 'n/a'}</span></div>
+        <div class="area-stat"><label>4-bed-equivalent median*</label><span>${areaGbp(all.median_4bed_equiv)}</span></div>
+        <div class="area-stat"><label>Trend (last 12m vs prior)</label><span>${all.trend_pct === null || all.trend_pct === undefined ? 'n/a' : `${all.trend_pct > 0 ? '+' : ''}${all.trend_pct}%`}</span></div>
+      </div>
+      ${typeRows ? `<div class="schools-table-wrap"><table><thead><tr><th>Type</th><th>Sales</th><th>Median</th><th>£/m²</th></tr></thead><tbody>${typeRows}</tbody></table></div>` : ''}
+      <p class="transport-subhead" style="margin-top:1rem">Recent sales nearby (★ = ${areaGbp(band[0])} to ${areaGbp(band[1])})</p>
+      <div class="schools-table-wrap"><table><thead><tr><th>Date</th><th>Price</th><th>Type</th><th>Street</th><th>EPC</th></tr></thead><tbody>${saleRows || '<tr><td colspan="5">No recent sales</td></tr>'}</tbody></table></div>
+      <p class="area-note">*4-bed-equivalent = homes with 5 or more habitable rooms on the matched EPC (an estimate, EPCs do not record bedrooms). ${epcLoaded ? '' : 'EPC data is not loaded yet, so floor area figures are unavailable. '}House numbers are not shown.</p>`;
+  }
+
+  function areaScoreHtml(record, index) {
+    const scoring = index.scoring;
+    const parts = record.score.parts || {};
+    const rows = AREA_SUBSCORES.map(key => {
+      const detail = Object.entries(parts[key] || {}).map(([k, v]) => `${escapeHtml(k.replace(/_/g, ' '))} ${v === null ? 'n/a' : Math.round(v)}`).join(' · ');
+      return `<div class="score-row"><label for="area-w-${key}">${key[0].toUpperCase()}${key.slice(1)}</label>
+          <div class="score-bar" role="img" aria-label="${key} score"><span id="area-bar-${key}" style="width:0%"></span></div>
+          <span class="score-value" id="area-val-${key}">n/a</span></div>
+        <p class="score-parts">${detail}</p>`;
+    }).join('');
+    const sliders = AREA_SUBSCORES.map(key => `<div><label>${key} weight <output id="area-wout-${key}">${scoring.weights[key]}</output></label>
+        <input type="range" min="0" max="100" step="5" id="area-w-${key}" value="${scoring.weights[key]}" aria-label="${key} weight"></div>`).join('');
+    return `<p class="area-asof">Percentile ranks within the ${escapeHtml((index.outcodes || []).join(', '))} pool · pack generated ${areaDate(index.generated_at)}</p>
+      <div class="stat-summary"><span class="score-total" id="area-total">n/a</span><span class="stat-label">out of 100</span></div>
+      ${record.score.school_capped ? '<p class="area-line"><span class="area-badge warn">School score capped: not in a target catchment</span></p>' : ''}
+      ${rows}
+      <div class="score-weights">${sliders}
+        <label for="area-budget">Budget (£)<input type="number" id="area-budget" min="0" step="10000" value="${scoring.budget_gbp}"></label>
+      </div>
+      <p class="area-note">Price basis: ${escapeHtml(index.price_basis || '')}. Above budget the price score is multiplied by ${scoring.over_budget_multiplier}. See docs/SCORING.md for the formula.</p>`;
+  }
+
+  /** Read weights and budget from the controls and redraw the score bars. */
+  function areaUpdateScore(record, index) {
+    const weights = {};
+    AREA_SUBSCORES.forEach(key => {
+      weights[key] = Number(document.getElementById(`area-w-${key}`).value);
+      document.getElementById(`area-wout-${key}`).textContent = String(weights[key]);
+    });
+    const budget = Number(document.getElementById('area-budget').value) || index.scoring.budget_gbp;
+    const s = record.score;
+    const subs = {
+      school: s.school,
+      price: areaPriceWithBudget(s.price_raw, s.budget_value, budget, index.scoring.over_budget_multiplier),
+      safety: s.safety,
+      community: s.community,
+    };
+    AREA_SUBSCORES.forEach(key => {
+      const v = subs[key];
+      document.getElementById(`area-bar-${key}`).style.width = `${v === null ? 0 : v}%`;
+      document.getElementById(`area-val-${key}`).textContent = v === null ? 'n/a' : String(Math.round(v));
+    });
+    const total = areaTotalScore(subs, weights);
+    document.getElementById('area-total').textContent = total === null ? 'n/a' : String(Math.round(total));
+    return total;
+  }
+
+  /**
+   * Show the Area Pack cards when the postcode is in the pack. Returns false (and leaves the
+   * page exactly as before) for any other postcode.
+   */
+  async function renderAreaPack(pcds) {
+    const controller = searchAbortController;
+    const index = await loadAreaPackIndex();
+    const shard = index && index.postcodes && index.postcodes[pcds];
+    if (!shard) return false;
+    const sectorFile = pcds.slice(0, pcds.indexOf(' ') + 2).replace(' ', '-');
+    const [shardData, sector] = await Promise.all([
+      loadAreaPackJson(`postcodes/${shard}.json`),
+      loadAreaPackJson(`sectors/${sectorFile}.json`),
+    ]);
+    const record = shardData && shardData.postcodes && shardData.postcodes[pcds];
+    if (!record || (controller && controller.signal.aborted)) return false;
+
+    setCardContent('card-admissions', areaAdmissionsHtml(pcds, record, index));
+    setCardContent('card-prices', areaPricesHtml(pcds, record, sector, index));
+    setCardContent('card-score', areaScoreHtml(record, index));
+    AREA_PACK_CARDS.forEach(id => { document.getElementById(id).hidden = false; });
+    const redraw = () => areaUpdateScore(record, index);
+    AREA_SUBSCORES.forEach(key => document.getElementById(`area-w-${key}`).addEventListener('input', redraw));
+    document.getElementById('area-budget').addEventListener('input', redraw);
+    redraw();
+
+    const attribution = document.getElementById('area-pack-attribution');
+    attribution.innerHTML = `<strong>Area Pack (${escapeHtml(index.area)}), generated ${areaDate(index.generated_at)}:</strong><br>${(index.attribution || []).map(escapeHtml).join('<br>')}<br><a href="shortlist.html">Ranked shortlist for the whole area</a>`;
+    attribution.hidden = false;
+    return true;
+  }
+  // AREA PACK END
+
+  // ════════════════════════════════════════════════════════════════
   // MAIN SEARCH FUNCTION
   // ════════════════════════════════════════════════════════════════
 
@@ -533,6 +834,7 @@
       card.appendChild(h2.cloneNode(true));
       card.insertAdjacentHTML('beforeend', spinner());
     });
+    hideAreaPackCards();
 
     [crimeChart, ethnicityChart, tenureChart, religionChart].forEach(c => { if (c) c.destroy(); });
     crimeChart = ethnicityChart = tenureChart = religionChart = null;
@@ -565,6 +867,7 @@
         renderReligion(lsoaCode),
         renderPlanningExtensions(lat, lng),
         renderTransport(lat, lng),
+        renderAreaPack(r.postcode),
       ]);
 
     } catch (err) {
@@ -587,6 +890,13 @@
       runSearch();
     }
   });
+
+  // Links such as index.html?postcode=B90%203DF (used by shortlist.html) search straight away.
+  const linkedPostcode = new URLSearchParams(window.location.search).get('postcode');
+  if (linkedPostcode) {
+    document.getElementById('postcodeInput').value = linkedPostcode;
+    runSearch();
+  }
 
   // ════════════════════════════════════════════════════════════════
   // RENDER FUNCTIONS - Data Display

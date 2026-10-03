@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Area Shortlist - UK Postcode Checker</title>
+  <meta name="description" content="Ranked shortlist of postcodes in the Area Pack, scored from official open data: schools, sold prices, safety and community.">
+  <link rel="canonical" href="https://sahirvhora.github.io/uk-postcode-checker/shortlist.html">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    :root {
+      --bg: #f0f2f5; --surface: #fff; --text: #1a1a2e; --muted: #4a5568; --faint: #8fa8c0;
+      --border: #e0e6ed; --header: #0d1b2a; --accent: #e76f51; --link: #3a7bd5; --row-alt: #f8fafc;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0b1220; --surface: #131c2e; --text: #e6edf6; --muted: #b6c2d2; --faint: #7d8ea5;
+        --border: #24324a; --header: #060b14; --accent: #f08a6e; --link: #7fb0ff; --row-alt: #18233a;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #0b1220; --surface: #131c2e; --text: #e6edf6; --muted: #b6c2d2; --faint: #7d8ea5;
+      --border: #24324a; --header: #060b14; --accent: #f08a6e; --link: #7fb0ff; --row-alt: #18233a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { color: var(--link); }
+    header { background: var(--header); color: #fff; padding: 2rem 1rem 1.5rem; text-align: center; }
+    header h1 { font-size: 1.7rem; font-weight: 700; margin-bottom: 0.3rem; }
+    header p { font-size: 0.82rem; color: #8fa8c0; }
+    header a { color: #fff; }
+    main { max-width: 1280px; margin: 1.5rem auto; padding: 0 1rem 3rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .card h2 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.9rem; }
+    .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 0.8rem 1.2rem; align-items: end; }
+    .controls label { font-size: 0.78rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.3rem; }
+    .controls select, .controls input[type=number] { border: 1px solid var(--border); border-radius: 6px; padding: 0.45rem 0.55rem; font: inherit; background: var(--surface); color: var(--text); }
+    .controls input[type=range] { width: 100%; accent-color: var(--accent); }
+    .weights { margin-top: 1rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-top: 1rem; }
+    button { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 0.5rem 1rem; font: inherit; font-weight: 600; cursor: pointer; }
+    button.secondary { background: transparent; color: var(--accent); }
+    #count { font-size: 0.85rem; color: var(--muted); }
+    #map { height: 440px; border-radius: 8px; }
+    .legend { display: flex; gap: 0.8rem; flex-wrap: wrap; font-size: 0.75rem; color: var(--muted); margin-top: 0.6rem; }
+    .legend span::before { content: ""; display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 50%; margin-right: 0.3rem; vertical-align: -0.1rem; background: var(--swatch); }
+    .table-wrap { overflow-x: auto; max-height: 70vh; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th { position: sticky; top: 0; background: var(--surface); text-align: left; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    th button { background: none; border: none; color: var(--faint); font-size: 0.7rem; text-transform: uppercase; padding: 0.45rem 0.4rem; font-weight: 700; cursor: pointer; }
+    th[aria-sort="ascending"] button::after { content: " ▲"; }
+    th[aria-sort="descending"] button::after { content: " ▼"; }
+    td { padding: 0.4rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody tr:nth-child(even) { background: var(--row-alt); }
+    .yes { color: #2f855a; font-weight: 700; }
+    .total { font-weight: 800; }
+    .note { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+    footer { text-align: center; padding: 1.5rem 1rem; font-size: 0.75rem; color: var(--faint); line-height: 1.6; border-top: 1px solid var(--border); background: var(--surface); }
+    @media (max-width: 600px) { #map { height: 320px; } header h1 { font-size: 1.35rem; } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Area shortlist</h1>
+  <p id="subtitle">Ranked from official open data · <a href="index.html">Back to the postcode checker</a></p>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="filters-title">
+    <h2 id="filters-title">Filters and weights</h2>
+    <div class="controls">
+      <label for="f-catchment">Catchment
+        <select id="f-catchment">
+          <option value="any">Any postcode</option>
+          <option value="either" selected>TGA or Alderbrook catchment</option>
+          <option value="tga">Tudor Grange Academy catchment</option>
+          <option value="alderbrook">Alderbrook catchment</option>
+        </select>
+      </label>
+      <label for="f-outcode">Outcode
+        <select id="f-outcode"><option value="">All outcodes</option></select>
+      </label>
+      <label for="f-budget">Budget (£), hides areas above it
+        <input type="number" id="f-budget" min="0" step="10000">
+      </label>
+      <label for="f-min">Minimum total score: <output id="f-min-out">0</output>
+        <input type="range" id="f-min" min="0" max="100" step="5" value="0">
+      </label>
+    </div>
+    <div class="controls weights" id="weights"></div>
+    <div class="actions">
+      <button type="button" id="reset">Reset weights</button>
+      <button type="button" class="secondary" id="export">Export CSV</button>
+      <span id="count" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="map-title">
+    <h2 id="map-title">Map of postcode centres (coloured by total score)</h2>
+    <div id="map" role="region" aria-label="Map of shortlisted postcodes"></div>
+    <div class="legend" id="legend"></div>
+    <p class="note">Markers show postcode centres only. Catchment boundaries are not published here; confirm any address at <a href="https://www.solihull.gov.uk/onlinemaps" target="_blank" rel="noopener noreferrer">solihull.gov.uk/onlinemaps</a>.</p>
+  </section>
+
+  <section class="card" aria-labelledby="table-title">
+    <h2 id="table-title">Ranked postcodes</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="note">Distances are straight lines from the postcode centre to the school gate (postcode-centroid estimate, actual LLPG distance may differ by up to ~0.1 mi). Chance labels compare with the last place offered on national offer day in recent years; they are not a guarantee. Scores are percentile ranks within the pool, see docs/SCORING.md.</p>
+  </section>
+</main>
+
+<footer id="footer">Loading data sources…</footer>
+
+<script>
+  // SHORTLIST START
+  const SUBSCORES = ['school', 'price', 'safety', 'community'];
+  const CHANCE_TEXT = { safe: 'historically safe', all: 'every year', some: 'some years', none: 'not offered', nohist: 'no data' };
+  const SCORE_BINS = [
+    { min: 80, colour: '#08306b', label: '80+' },
+    { min: 65, colour: '#2171b5', label: '65 to 79' },
+    { min: 50, colour: '#6baed6', label: '50 to 64' },
+    { min: 35, colour: '#c6dbef', label: '35 to 49' },
+    { min: 0, colour: '#f7f7f7', label: 'under 35' },
+  ];
+  const COLUMNS = [
+    { key: 'rank', label: 'Rank' },
+    { key: 'pcds', label: 'Postcode' },
+    { key: 'total_now', label: 'Total' },
+    { key: 'school', label: 'School' },
+    { key: 'price_now', label: 'Price' },
+    { key: 'safety', label: 'Safety' },
+    { key: 'community', label: 'Community' },
+    { key: 'in_tga', label: 'TGA catchment' },
+    { key: 'tga_mi', label: 'TGA gate mi' },
+    { key: 'tga_indicator', label: 'TGA chance' },
+    { key: 'in_alderbrook', label: 'Alderbrook catchment' },
+    { key: 'alderbrook_mi', label: 'Alderbrook gate mi' },
+    { key: 'alderbrook_indicator', label: 'Alderbrook chance' },
+    { key: 'median_price', label: 'Median price' },
+    { key: 'family_rate', label: 'Family crime /1000' },
+    { key: 'imd_decile', label: 'IMD decile' },
+    { key: 'asian_pct', label: 'Asian %' },
+    { key: 'muslim_pct', label: 'Muslim %' },
+    { key: 'mosque_mi', label: 'Mosque mi' },
+    { key: 'halal_mi', label: 'Halal mi' },
+  ];
+
+  function escapeHtml(value) {
+    const replacements = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(value ?? '').replace(/[&<>"']/g, char => replacements[char]);
+  }
+
+  /** Same formula as areaTotalScore() in index.html and total_score() in pipeline/score.py. */
+  function areaTotalScore(subs, weights) {
+    let num = 0, den = 0;
+    SUBSCORES.forEach(key => {
+      const value = subs[key];
+      const weight = Number(weights[key]) || 0;
+      if (value !== null && value !== undefined && weight) { num += weight * value; den += weight; }
+    });
+    return den ? Math.round((num / den) * 100) / 100 : null;
+  }
+
+  function areaPriceWithBudget(raw, budgetValue, budget, multiplier) {
+    if (raw === null || raw === undefined) return null;
+    if (budgetValue !== null && budgetValue !== undefined && budgetValue > budget) return Math.round(raw * multiplier * 100) / 100;
+    return raw;
+  }
+
+  /** Turn the columnar shortlist.json into row objects. */
+  function rowsFromPack(pack) {
+    return pack.rows.map(values => Object.fromEntries(pack.columns.map((c, i) => [c, values[i]])));
+  }
+
+  /** Recompute price and total for the current weights and budget. */
+  function scoreRows(rows, weights, budget, multiplier) {
+    return rows.map(r => {
+      const price = areaPriceWithBudget(r.price_raw, r.budget_value, budget, multiplier);
+      return { ...r, price_now: price, total_now: areaTotalScore({ school: r.school, price, safety: r.safety, community: r.community }, weights) };
+    });
+  }
+
+  function filterRows(rows, { catchment = 'any', outcode = '', budget = null, minScore = 0 }) {
+    return rows.filter(r => {
+      if (catchment === 'either' && !r.in_target) return false;
+      if (catchment === 'tga' && !r.in_tga) return false;
+      if (catchment === 'alderbrook' && !r.in_alderbrook) return false;
+      if (outcode && r.outcode !== outcode) return false;
+      if (budget && r.budget_value !== null && r.budget_value !== undefined && r.budget_value > budget) return false;
+      if (minScore && (r.total_now === null || r.total_now < minScore)) return false;
+      return true;
+    });
+  }
+
+  /** Sort with nulls last in either direction, then add a 1-based rank by total score. */
+  function sortRows(rows, key, direction) {
+    const sign = direction === 'ascending' ? 1 : -1;
+    const byTotal = [...rows].sort((a, b) => (b.total_now ?? -1) - (a.total_now ?? -1));
+    const rank = new Map(byTotal.map((r, i) => [r.pcds, i + 1]));
+    const withRank = rows.map(r => ({ ...r, rank: rank.get(r.pcds) }));
+    return withRank.sort((a, b) => {
+      const av = a[key], bv = b[key];
+      if (av === null || av === undefined) return 1;
+      if (bv === null || bv === undefined) return -1;
+      if (typeof av === 'string') return sign * av.localeCompare(bv);
+      return sign * ((av > bv) - (av < bv));
+    });
+  }
+
+  /** CSV with quoting; text starting with = + @ is prefixed so spreadsheets do not run it as a formula. */
+  function toCsv(rows, columns) {
+    const cell = v => {
+      if (v === null || v === undefined) return '';
+      let s = String(v);
+      if (/^[=+@]/.test(s)) s = `'${s}`;
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    return [columns.map(c => cell(c.label)).join(','), ...rows.map(r => columns.map(c => cell(r[c.key])).join(','))].join('\n') + '\n';
+  }
+
+  function scoreColour(total) {
+    if (total === null || total === undefined) return '#bdbdbd';
+    return SCORE_BINS.find(b => total >= b.min).colour;
+  }
+  // SHORTLIST END
+
+  const state = { rows: [], pack: null, sortKey: 'total_now', sortDir: 'descending', map: null, layer: null };
+  const $ = id => document.getElementById(id);
+  const fmt = (v, digits = 1) => (v === null || v === undefined) ? '' : Number(v).toFixed(digits);
+  const gbp = v => (v === null || v === undefined) ? '' : `£${Math.round(v).toLocaleString('en-GB')}`;
+
+  function currentWeights() {
+    return Object.fromEntries(SUBSCORES.map(k => [k, Number($(`w-${k}`).value)]));
+  }
+
+  function currentRows() {
+    const scoring = state.pack.scoring;
+    const budget = Number($('f-budget').value) || scoring.budget_gbp;
+    const scored = scoreRows(state.rows, currentWeights(), budget, scoring.over_budget_multiplier);
+    const filtered = filterRows(scored, {
+      catchment: $('f-catchment').value, outcode: $('f-outcode').value,
+      budget: Number($('f-budget').value) || null, minScore: Number($('f-min').value),
+    });
+    return sortRows(filtered, state.sortKey, state.sortDir);
+  }
+
+  function cellHtml(r, key) {
+    const v = r[key];
+    if (key === 'pcds') return `<a href="index.html?postcode=${encodeURIComponent(v)}">${escapeHtml(v)}</a>`;
+    if (key === 'in_tga' || key === 'in_alderbrook') return v ? '<span class="yes">yes</span>' : 'no';
+    if (key.endsWith('_indicator')) return escapeHtml(CHANCE_TEXT[v] || v || '');
+    if (key === 'median_price') return gbp(v);
+    if (key.endsWith('_mi')) return fmt(v, 2);
+    if (key === 'total_now') return `<span class="total">${fmt(v, 0)}</span>`;
+    if (['school', 'price_now', 'safety', 'community'].includes(key)) return fmt(v, 0);
+    return escapeHtml(v ?? '');
+  }
+
+  function render() {
+    const rows = currentRows();
+    $('count').textContent = `${rows.length.toLocaleString('en-GB')} of ${state.rows.length.toLocaleString('en-GB')} postcodes`;
+    $('head').innerHTML = COLUMNS.map(c => `<th scope="col" aria-sort="${state.sortKey === c.key ? state.sortDir : 'none'}"><button type="button" data-key="${c.key}">${escapeHtml(c.label)}</button></th>`).join('');
+    $('rows').innerHTML = rows.map(r => `<tr>${COLUMNS.map(c => `<td>${cellHtml(r, c.key)}</td>`).join('')}</tr>`).join('');
+    if (state.map) {
+      state.layer.clearLayers();
+      rows.forEach(r => {
+        L.circleMarker([r.lat, r.lng], { radius: 5, weight: 1, color: '#333', fillColor: scoreColour(r.total_now), fillOpacity: 0.9 })
+          .bindPopup(`<strong>${escapeHtml(r.pcds)}</strong><br>Total ${fmt(r.total_now, 0)} (rank ${r.rank})<br>School ${fmt(r.school, 0)} · Price ${fmt(r.price_now, 0)} · Safety ${fmt(r.safety, 0)} · Community ${fmt(r.community, 0)}<br><a href="index.html?postcode=${encodeURIComponent(r.pcds)}">Open in checker</a>`)
+          .addTo(state.layer);
+      });
+      if (rows.length && !state.fitted) { state.map.fitBounds(state.layer.getBounds(), { padding: [20, 20] }); state.fitted = true; }
+    }
+    return rows;
+  }
+
+  function exportCsv() {
+    const blob = new Blob([toCsv(currentRows(), COLUMNS)], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `area-shortlist-${state.pack.generated_at}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function init() {
+    let pack;
+    try {
+      const res = await fetch('data/area-pack/shortlist.json');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      pack = await res.json();
+    } catch (err) {
+      $('rows').innerHTML = `<tr><td>Could not load data/area-pack/shortlist.json (${escapeHtml(err.message)}). Serve the folder with "python -m http.server" rather than opening the file directly.</td></tr>`;
+      return;
+    }
+    state.pack = pack;
+    state.rows = rowsFromPack(pack);
+    const w = pack.scoring.weights;
+    $('weights').innerHTML = SUBSCORES.map(k => `<label for="w-${k}">${k} weight: <output id="w-${k}-out">${w[k]}</output>
+      <input type="range" id="w-${k}" min="0" max="100" step="5" value="${w[k]}"></label>`).join('');
+    $('f-budget').value = pack.scoring.budget_gbp;
+    [...new Set(state.rows.map(r => r.outcode))].sort().forEach(o => $('f-outcode').insertAdjacentHTML('beforeend', `<option>${escapeHtml(o)}</option>`));
+    $('subtitle').insertAdjacentHTML('afterbegin', `Generated ${escapeHtml(pack.generated_at)} · `);
+    $('footer').innerHTML = `<strong>Data sources:</strong><br>${pack.attribution.map(escapeHtml).join('<br>')}`;
+    $('legend').innerHTML = SCORE_BINS.map(b => `<span style="--swatch:${b.colour}">${b.label}</span>`).join('');
+
+    if (window.L) {
+      state.map = L.map('map', { scrollWheelZoom: false });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(state.map);
+      state.layer = L.featureGroup().addTo(state.map);
+    }
+
+    const rerender = () => {
+      SUBSCORES.forEach(k => { $(`w-${k}-out`).textContent = $(`w-${k}`).value; });
+      $('f-min-out').textContent = $('f-min').value;
+      render();
+    };
+    ['f-catchment', 'f-outcode', 'f-budget', 'f-min', ...SUBSCORES.map(k => `w-${k}`)].forEach(id => $(id).addEventListener('input', rerender));
+    $('head').addEventListener('click', e => {
+      const key = e.target.closest('button')?.dataset.key;
+      if (!key) return;
+      state.sortDir = state.sortKey === key && state.sortDir === 'descending' ? 'ascending' : 'descending';
+      state.sortKey = key;
+      render();
+    });
+    $('reset').addEventListener('click', () => { SUBSCORES.forEach(k => { $(`w-${k}`).value = w[k]; }); rerender(); });
+    $('export').addEventListener('click', exportCsv);
+    rerender();
+  }
+
+  init();
+</script>
+</body>
+</html>

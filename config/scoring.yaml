@@ -1,0 +1,42 @@
+# Scoring weights and parameters. See docs/SCORING.md for the formula.
+# Weights are relative; they are normalised to sum to 100.
+weights:
+  school: 40
+  price: 25
+  safety: 20
+  community: 15
+
+budget_gbp: 550000
+
+school:
+  # A postcode in neither target catchment cannot score above this.
+  not_in_catchment_cap: 40
+  components:
+    in_tga_catchment: 20
+    in_alderbrook_catchment: 15
+    tga_gate_distance: 15
+    alderbrook_gate_distance: 10
+    st_james_distance: 5
+    admission_safety: 20
+    ofsted: 7.5
+    ks4_attainment: 7.5
+
+price:
+  components:
+    gbp_per_sqm: 50
+    four_bed_median: 50
+  # Score multiplier applied when the 4-bed-equivalent median is above budget.
+  over_budget_multiplier: 0.25
+
+safety:
+  components:
+    family_crime_rate: 50
+    imd_crime_decile: 25
+    imd_decile: 25
+
+community:
+  components:
+    asian_pct: 30
+    muslim_pct: 30
+    nearest_mosque: 20
+    nearest_halal: 20

@@ -1,0 +1,4 @@
+urn,entry_year,entry_point,pan,applications,first_prefs,last_priority,last_distance_miles,source_url,note
+136994,2025,catchment_map,280,,,Priority 6 Distance,0.405,https://www.solihull.gov.uk/sites/default/files/2025-09/Alderbrook-School-Catchment-Map.pdf,USER SEED (verify): from the original brief; checked against the parsed map PDF on every run
+136994,2024,catchment_map,280,,,Priority 5 Distance,0.546,https://www.solihull.gov.uk/sites/default/files/2025-09/Alderbrook-School-Catchment-Map.pdf,USER SEED (verify): from the original brief; checked against the parsed map PDF on every run
+136994,2023,catchment_map,280,,,Criteria 3 Sibling,1.745,https://www.solihull.gov.uk/sites/default/files/2025-09/Alderbrook-School-Catchment-Map.pdf,USER SEED (verify): from the original brief; checked against the parsed map PDF on every run
