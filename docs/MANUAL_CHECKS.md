@@ -54,7 +54,7 @@ Postcodes are tested at their centroid. If your address is near a boundary, chec
 
 | Item | Why | What to do |
 |---|---|---|
-| KS2/KS4 performance tables | compare-school-performance.service.gov.uk blocks automated clients (HTTP 403). The pipeline does not impersonate a browser. | In a browser, open https://www.compare-school-performance.service.gov.uk/download-data. For each of the latest 3 years choose 'Local authority' for each of Solihull, Birmingham, Warwickshire and Worcestershire, tick 'Key stage 2 results (final)' and 'Key stage 4 results (final)', then 'Data in CSV format'. Save the ZIPs unchanged into `data/manual/performance/` and run `python -m pipeline.run --sources performance`. |
+| KS2/KS4 performance tables | **2024-25 imported** (4 ZIPs: Solihull, Birmingham, Warwickshire, Worcestershire). compare-school-performance.service.gov.uk blocks automated clients (HTTP 403), so files are downloaded by hand. | Optional: add 2023-24 and 2022-23 the same way (download page, 'Local authority', tick KS2 and KS4 final, 'Data in CSV format'), save the ZIPs unchanged into `data/manual/performance/`, then `python -m pipeline.run --sources performance` and `python -m pipeline.export`. |
 | EPC certificates | The EPC API needs a personal bearer token. | Sign in at https://get-energy-performance-data.communities.gov.uk/ with GOV.UK One Login, copy the token from 'My account' into `.env` as `EPC_API_TOKEN=...`, then `python -m pipeline.run --sources epc`. Alternatively download the domestic bulk CSV for Solihull, Bromsgrove, Stratford-on-Avon and Warwick into `data/manual/epc/`. Until then the price score uses the house-price proxy and GBP per square metre is unavailable. |
 
 ## 5. Spot checks against official sites
