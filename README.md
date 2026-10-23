@@ -41,6 +41,14 @@ open index.html
 
 No server, no install, no build step. Single HTML file - just open it.
 
+## Compare two postcodes
+
+Open `compare.html` from the homepage's **Compare two postcodes** link. Enter two different UK postcodes to see all categories side by side. Use the selector at the top to focus on one category. Categories include location, crime, schools, transport, housing tenure, ethnicity, religion, and planning extensions.
+
+Profiles load independently using the existing lookup. The page scrolls through all categories, with matching sections aligned; mobile screens stack the profiles. Compare dates and coverage before interpreting differences. Missing data does not mean zero, and crime counts are not population-adjusted rates. Local area-pack scores and catchments remain in the single-postcode view.
+
+Serve the folder with `python3 -m http.server 8000` and open `http://localhost:8000/compare.html`.
+
 ## Google Places API (Optional)
 
 To enable school star ratings:
