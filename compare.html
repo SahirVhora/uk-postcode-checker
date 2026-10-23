@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compare two postcodes - UK Postcode Checker</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #f0f2f5; color: #1a1a2e; font-family: system-ui, sans-serif; }
+header { background: #0d1b2a; color: white; padding: 1.5rem max(1rem, calc((100vw - 1300px)/2)); }
+header a { color: white; }
+h1 { margin: .8rem 0; }
+main { max-width: 1332px; margin: auto; padding: 1rem; }
+form { display: flex; align-items: end; gap: 1rem; flex-wrap: wrap; }
+label { display: block; font-weight: 600; }
+input, select, button { font: inherit; border-radius: 6px; padding: .7rem; border: 1px solid #aab6c3; }
+input { display: block; margin-top: .4rem; width: 13rem; text-transform: uppercase; }
+button { background: #bf492c; color: white; cursor: pointer; border-color: #bf492c; }
+#errors { color: #a51d23; font-weight: 600; }
+.toolbar { margin: 1.5rem 0 1rem; position: sticky; top: 0; z-index: 10; background: #f0f2f5; padding: .75rem 0; }
+.toolbar label { display: inline; margin-right: .5rem; }
+.profiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.profile { background: white; border: 1px solid #d5dde5; border-radius: 10px; overflow: hidden; }
+h2 { margin: 0; padding: 1rem; background: #e5edf4; }
+iframe { width: 100%; height: 750px; border: 0; display: block; }
+.note { color: #495768; line-height: 1.5; }
+[hidden] { display: none !important; }
+@media (max-width: 700px) { .profiles { grid-template-columns: 1fr; } iframe { height: 600px; } }
+</style>
+</head>
+<body>
+<header><a href="index.html">← Single postcode lookup</a><h1>Compare two postcodes</h1><p>View all categories for two areas, or select a specific check.</p></header>
+<main>
+<form id="compare-form">
+<label>First postcode<input id="first" placeholder="B90 3DF" maxlength="8" required aria-describedby="errors"></label>
+<label>Second postcode<input id="second" placeholder="SW1A 1AA" maxlength="8" required aria-describedby="errors"></label>
+<button type="submit">Compare postcodes</button>
+</form>
+<p id="errors" role="alert"></p>
+<div id="comparison" hidden>
+<div class="toolbar"><label for="category">Compare</label><select id="category">
+<option value="all">All categories</option>
+<option value="location">Location</option><option value="crime">Crime</option><option value="schools">Schools</option>
+<option value="transport">Transport</option><option value="tenure">Housing tenure</option><option value="ethnicity">Ethnicity</option>
+<option value="religion">Religion</option><option value="planning">Planning extensions</option>
+</select></div>
+<p class="note">Both profiles use the existing lookup sources and search radii. Check dates and coverage on each side. Crime counts are not population-adjusted rates. Missing data does not mean zero.</p>
+<div class="profiles">
+<section class="profile" aria-labelledby="first-heading"><h2 id="first-heading"></h2><iframe id="first-profile" title="First postcode profile"></iframe></section>
+<section class="profile" aria-labelledby="second-heading"><h2 id="second-heading"></h2><iframe id="second-profile" title="Second postcode profile"></iframe></section>
+</div>
+<p class="note">All categories appear on this page. Use the selector above to focus on one category. On small screens, profiles appear one above the other. Detailed local area-pack scores and catchments remain available in the single postcode lookup.</p>
+</div>
+</main>
+<script src="compare.js"></script>
+</body>
+</html>

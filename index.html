@@ -206,6 +206,7 @@
 <header>
   <h1>Sahir's UK Postcode Checker</h1>
   <p class="subtitle">Powered by ONS Census 2021 · Police API · OpenStreetMap · open data</p>
+  <p style="margin-bottom:1rem"><a href="compare.html" style="color:#fff">Compare two postcodes →</a></p>
   <div class="search-row">
     <input id="postcodeInput" type="text" placeholder="e.g. B90 2DH" maxlength="8" aria-label="Enter a UK postcode" aria-describedby="postcode-hint" />
     <p id="postcode-hint" class="error-msg" style="display:none;margin-top:0.5rem;" aria-live="polite"></p>
@@ -276,7 +277,7 @@
     API_ERROR: (name, msg) => `${name} data unavailable: ${msg}`,
   };
 
-  const POSTCODE_REGEX = /^[A-Z]{1,2}[0-9]{1,2}[A-Z]?\s?[0-9][A-Z]{2}$/i;
+  const POSTCODE_REGEX = /^(GIR\s?0AA|[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2})$/i;
 
   /* Chart instances */
   let crimeChart = null, ethnicityChart = null, tenureChart = null, religionChart = null;
